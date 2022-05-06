@@ -195,6 +195,7 @@ const EditFeaturedStores: React.FC<{}> = ({ }) => {
   const [ps, setPs] = useRecoilState(pageStateAtm)
   const [isShowingModal, setIsShowingModal] = React.useState(false)
   const [mbStores, setMbStores] = React.useState<null | Store[]>(null)
+  const [selectedStore, setSelectedStore] = React.useState<null | string>()
 
   React.useEffect(() => {
     fetchHomePage().then(hp => {
@@ -214,12 +215,32 @@ const EditFeaturedStores: React.FC<{}> = ({ }) => {
     setIsShowingModal(false);
   }
 
+  const onAdd = React.useCallback((storeSlug: string) => {
+    console.log("MB STORES! ", mbStores)
+    if (mbStores) {
+      const newStore = mbStores.find(s => s.url_slug == storeSlug)!
+      console.log("NEW STORE! ", newStore)
+      setPs(s => ({ ...s, stores: [...s.stores, newStore] }))
+      setIsShowingModal(false)
+    }
+  }, [mbStores])
+
   return (
     <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start' }}>
       <h3>Featured Stores</h3>
 
-      <div style={{ width: 100, height: 200, border: '1px dotted black' }} onClick={openModal}>
-        Add Store
+      <div style={{ display: 'flex', flexDirection: 'row' }}>
+        {ps.stores.map(s => {
+          return (
+            <div style={{ width: 100, height: 200, border: '1px solid black', marginRight: 20 }}>{s.name}</div>
+          )
+        })}
+
+        <div style={{ width: 100, height: 200, border: '1px dotted black', display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center' }} onClick={openModal}>
+          Add Store
+          <p>+</p>
+        </div>
+
       </div>
 
       <Modal
@@ -235,13 +256,14 @@ const EditFeaturedStores: React.FC<{}> = ({ }) => {
             (
               <div>
                 <Select
-                  defaultValue={{ value: mbStores[0].name, label: mbStores[0].name }}
+                  defaultValue={{ value: mbStores[0].url_slug, label: mbStores[0].name }}
+                  onChange={p => { setSelectedStore(p?.value) }}
                   formatOptionLabel={({ value, label }) => (
                     <div style={{ display: "flex", flexDirection: 'column' }}>
                       <div>{label}</div>
                     </div>
                   )}
-                  options={mbStores.map(s => ({ value: s.name, label: s.name }))}
+                  options={mbStores.map(s => ({ value: s.url_slug, label: s.name }))}
                 />
               </div>
             )
@@ -249,9 +271,17 @@ const EditFeaturedStores: React.FC<{}> = ({ }) => {
             (<></>)
           }
           <div>
-            <button onClick={() => { }}>
-              Add
-            </button>
+            {selectedStore
+              ?
+              (
+
+                <button onClick={() => onAdd(selectedStore)}>
+                  Add
+                </button>
+              )
+              :
+              (<></>)
+            }
           </div>
         </div>
       </Modal>
