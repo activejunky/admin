@@ -6,6 +6,9 @@ import { atom, useRecoilState, useRecoilValue } from 'recoil'
 import * as Rx from 'rxjs'
 import * as RxO from 'rxjs/operators'
 import Select, { SelectOptionActionMeta } from "react-select";
+import * as Dux from '@nll/dux/Store'
+import { actionCreatorFactory, actionFactory } from '@nll/dux/Actions'
+import { caseFn, reducerFn } from '@nll/dux/Reducers'
 
 const customStyles = {
   content: {
@@ -22,12 +25,14 @@ const customStyles = {
 
 type State = {
   pageTitle: string
-  banner: BannerContent
+  banner: BannerContent,
+  stores: Store[]
 }
 
 const emptyState: State = {
   pageTitle: '',
-  banner: { title: '', cashBackString: '' }
+  banner: { title: '', cashBackString: '' },
+  stores: []
 }
 
 type BannerContent = {
@@ -40,10 +45,47 @@ const pageStateAtm = atom({
   default: emptyState
 })
 
-const PageStateCtx = React.createContext<Rx.BehaviorSubject<State>>(new Rx.BehaviorSubject(emptyState))
+const PageStateCtx = React.createContext<null | Dux.Store<State>>(null)
+
+const actions = actionCreatorFactory("CREATE_DE_PAGE")
+
+function useStoreValue<V>(store: Dux.Store<State>, selector: Dux.Selector<State, V>) {
+  const v$ = React.useMemo(() => store.select(selector) as unknown as Rx.Observable<V>, [])
+  const v = useObservableEagerState(v$)
+  return v
+}
+
+class VM {
+  public store: Dux.Store<State>
+
+
+  constructor() {
+    this.store = Dux.createStore(emptyState)
+
+    const reducer = reducerFn<State>(
+      caseFn(VM.Actions.setPageTitle, (state, { value }) => ({ ...state, pageTitle: value })),
+
+      caseFn(VM.Actions.Banner.setBannerTitle, (state, { value }) => ({ ...state, banner: { ...state.banner, title: value } }))
+    );
+    this.store.addReducers(reducer)
+  }
+
+  static Actions = class {
+    static setPageTitle = actions.simple<string>("SET_PAGE_TITLE")
+
+    static Banner = class {
+      static setBannerTitle = actions.simple<string>("SET_BANNER_TITLE")
+    }
+  }
+}
+
+function useStore() {
+  const s = React.useContext(PageStateCtx)
+  return s!
+}
 
 export const DigitalEventsPage: React.FC<{}> = ({ }) => {
-  const pageState$ = React.useMemo(() => new Rx.BehaviorSubject(emptyState), [])
+  const vm = React.useMemo(() => new VM(), [])
   const pageState = useRecoilValue(pageStateAtm)
 
   return (
@@ -51,7 +93,8 @@ export const DigitalEventsPage: React.FC<{}> = ({ }) => {
       <h1>Digital Events</h1>
       <div>{JSON.stringify(pageState)}</div>
 
-      <PageStateCtx.Provider value={pageState$}>
+      <PageStateCtx.Provider value={vm.store}>
+        <div><Preview /></div>
         <EditPageTitle />
         <EditBanner />
         <EditFeaturedStores />
@@ -60,26 +103,40 @@ export const DigitalEventsPage: React.FC<{}> = ({ }) => {
   )
 }
 
+const Preview: React.FC<{}> = ({ }) => {
+  const store = useStore()
+  const p = useStoreValue(store, s => s)
+
+  return (
+    <div>{JSON.stringify(p)}</div>
+  )
+}
+
 const EditPageTitle: React.FC<{}> = ({ }) => {
+  const store = useStore()
+  const curTitle = useStoreValue(store, (s) => s.pageTitle)
   const [ps, setPs] = useRecoilState(pageStateAtm)
 
   const setPageTitle = React.useCallback((e: React.FormEvent<HTMLInputElement>) => {
     setPs(cp => ({ ...cp, pageTitle: e.currentTarget.value }))
+    store.dispatch(VM.Actions.setPageTitle(e.currentTarget.value))
   }, [])
 
   return (
     <div>
-      <input type="text" value={ps.pageTitle} onChange={setPageTitle} />
+      <input type="text" value={curTitle} onChange={setPageTitle} />
     </div>
   )
 }
 
 
 const EditBanner: React.FC<{}> = ({ }) => {
+  const store = useStore()
   const [ps, setPs] = useRecoilState(pageStateAtm)
 
   const setBannerTitle = React.useCallback((e: React.FormEvent<HTMLInputElement>) => {
     setPs(cp => ({ ...cp, banner: { ...cp.banner, title: e.currentTarget.value } }))
+    store.dispatch(VM.Actions.Banner.setBannerTitle(e.currentTarget.value))
   }, [])
 
   const setCashbackText = React.useCallback((e: React.FormEvent<HTMLInputElement>) => {
@@ -109,21 +166,6 @@ const options = [
   { value: "John", label: "John", customAbbreviation: "J" },
   { value: "Dustin", label: "Dustin", customAbbreviation: "D" }
 ];
-
-const CustomControl = () => (
-  <Select
-    defaultValue={options[0]}
-    formatOptionLabel={({ value, label, customAbbreviation }) => (
-      <div style={{ display: "flex", flexDirection: 'column' }}>
-        <div>{label}</div>
-        <div style={{ marginLeft: "10px", color: "#ccc" }}>
-          {customAbbreviation}
-        </div>
-      </div>
-    )}
-    options={options}
-  />
-);
 
 
 type Store = { id: number, url_slug: string, name: string, image_url: string }
@@ -207,7 +249,9 @@ const EditFeaturedStores: React.FC<{}> = ({ }) => {
             (<></>)
           }
           <div>
-            <button onClick={() => { }}>Add</button>
+            <button onClick={() => { }}>
+              Add
+            </button>
           </div>
         </div>
       </Modal>
