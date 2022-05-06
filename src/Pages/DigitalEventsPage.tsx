@@ -125,9 +125,44 @@ const CustomControl = () => (
   />
 );
 
+
+type Store = { id: number, url_slug: string, name: string, image_url: string }
+
+type HomepageData = {
+  store_carousels: { stores: Store[] }[]
+}
+
+async function fetchHomePage(): Promise<HomepageData> {
+  const headers = new Headers({
+    "Content-Type": "application/json",
+    "Access-Control-Allow-Origin": "*",
+    "Access-Control-Allow-Headers": "*",
+    "Access-Control-Allow-Methods": "*",
+    "Access-Control-Max-Age": "-1",
+  });
+
+  const url = "/api/homepages/content.json"
+  const r = await fetch(url, { headers })
+  console.log("R! ", r)
+  const j: HomepageData = await r.json()
+  console.log("J!", j)
+  return j
+}
+
 const EditFeaturedStores: React.FC<{}> = ({ }) => {
   const [ps, setPs] = useRecoilState(pageStateAtm)
   const [isShowingModal, setIsShowingModal] = React.useState(false)
+  const [mbStores, setMbStores] = React.useState<null | Store[]>(null)
+
+  React.useEffect(() => {
+    fetchHomePage().then(hp => {
+      console.log("MB STORES! ", hp.store_carousels)
+      setMbStores(hp.store_carousels.flatMap(sc => sc.stores))
+    })
+      .catch(e => {
+        console.error("FAILED! ", e)
+      })
+  }, [])
 
   function openModal() {
     setIsShowingModal(true);
@@ -154,7 +189,23 @@ const EditFeaturedStores: React.FC<{}> = ({ }) => {
       >
         <div style={{ width: '100%' }}>
           <button onClick={closeModal}>close</button>
-          <CustomControl />
+          {mbStores ?
+            (
+              <div>
+                <Select
+                  defaultValue={{ value: mbStores[0].name, label: mbStores[0].name }}
+                  formatOptionLabel={({ value, label }) => (
+                    <div style={{ display: "flex", flexDirection: 'column' }}>
+                      <div>{label}</div>
+                    </div>
+                  )}
+                  options={mbStores.map(s => ({ value: s.name, label: s.name }))}
+                />
+              </div>
+            )
+            :
+            (<></>)
+          }
           <div>
             <button onClick={() => { }}>Add</button>
           </div>
