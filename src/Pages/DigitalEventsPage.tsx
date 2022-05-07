@@ -115,6 +115,7 @@ const EditFeaturedStores: React.FC<{}> = ({ }) => {
   const [mbStores, setMbStores] = React.useState<null | Store[]>(null)
   const [selectedStore, setSelectedStore] = React.useState<null | string>()
   const stores = useSelector((state: RootState) => state.editModel.stores)
+  const dispatch = useDispatch<Dispatch>()
 
   React.useEffect(() => {
     fetchHomePage().then(hp => {
@@ -139,6 +140,7 @@ const EditFeaturedStores: React.FC<{}> = ({ }) => {
     if (mbStores) {
       const newStore = mbStores.find(s => s.url_slug == storeSlug)!
       console.log("NEW STORE! ", newStore)
+      dispatch.editModel.addStore(newStore)
       setIsShowingModal(false)
     }
   }, [mbStores])

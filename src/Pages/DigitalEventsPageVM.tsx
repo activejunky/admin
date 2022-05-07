@@ -35,6 +35,10 @@ export const editModel = createModel<RootModel>()({
     },
     setBannerCachback(state, payload: string) {
       return { ...state, banner: { ...state.banner, cashBackString: payload } }
+    },
+
+    addStore(state, payload: AJStore) {
+      return { ...state, stores: [...state.stores, payload] }
     }
   },
   effects: (dispatch) => ({
