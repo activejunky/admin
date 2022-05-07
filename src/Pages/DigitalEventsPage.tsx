@@ -1,13 +1,8 @@
-import { actionCreatorFactory } from '@nll/dux/Actions'
-import { caseFn, reducerFn } from '@nll/dux/Reducers'
-import * as Dux from '@nll/dux/Store'
-import { useObservableEagerState } from 'observable-hooks'
 import * as React from 'react'
 import Modal from 'react-modal'
 import { Provider, useDispatch, useSelector } from "react-redux"
 import Select from "react-select"
-import * as Rx from 'rxjs'
-import { Dispatch, emptyState, PageState, RootState, store } from './DigitalEventsPageVM'
+import { Dispatch, RootState, store } from './DigitalEventsPageVM'
 
 const customStyles = {
   content: {
@@ -24,80 +19,36 @@ const customStyles = {
 
 
 
-const PageStateCtx = React.createContext<null | Dux.Store<PageState>>(null)
 
-const actions = actionCreatorFactory("CREATE_DE_PAGE")
-
-function useStoreValue<V>(store: Dux.Store<PageState>, selector: Dux.Selector<PageState, V>) {
-  const v$ = React.useMemo(() => store.select(selector) as unknown as Rx.Observable<V>, [])
-  const v = useObservableEagerState(v$)
-  return v
-}
-
-class VM {
-  public store: Dux.Store<PageState>
-
-
-  constructor() {
-    this.store = Dux.createStore(emptyState)
-
-    const reducer = reducerFn<PageState>(
-      caseFn(VM.Actions.setPageTitle, (state, { value }) => ({ ...state, pageTitle: value })),
-
-      caseFn(VM.Actions.Banner.setBannerTitle, (state, { value }) => ({ ...state, banner: { ...state.banner, title: value } }))
-    );
-    this.store.addReducers(reducer)
-  }
-
-  static Actions = class {
-    static setPageTitle = actions.simple<string>("SET_PAGE_TITLE")
-
-    static Banner = class {
-      static setBannerTitle = actions.simple<string>("SET_BANNER_TITLE")
-    }
-  }
-}
-
-function useStore() {
-  const s = React.useContext(PageStateCtx)
-  return s!
-}
 
 export const DigitalEventsPage: React.FC<{}> = ({ }) => {
-  const vm = React.useMemo(() => new VM(), [])
-
   return (
     <div style={{ width: '100vw', height: '100vh', padding: 20 }}>
       <h1>Digital Events</h1>
 
       <Provider store={store}>
-        <PageStateCtx.Provider value={vm.store}>
-          <div><Preview /></div>
-          <EditPageTitle />
-          <EditBanner />
-          <EditFeaturedStores />
-        </PageStateCtx.Provider>
+        <div><Preview /></div>
+        <EditPageTitle />
+        <EditBanner />
+        <EditFeaturedStores />
       </Provider>
     </div>
   )
 }
 
 const Preview: React.FC<{}> = ({ }) => {
-  const store = useStore()
-  const p = useStoreValue(store, s => s)
+  const fullPage = useSelector((state: RootState) => state)
 
   return (
-    <div>{JSON.stringify(p)}</div>
+    <div>{JSON.stringify(fullPage)}</div>
   )
 }
 
 const EditPageTitle: React.FC<{}> = ({ }) => {
-  const store = useStore()
   const dispatch = useDispatch<Dispatch>()
   const inputPageTitle = useSelector((state: RootState) => state.editModel.pageTitle)
 
   const setPageTitle = React.useCallback((e: React.FormEvent<HTMLInputElement>) => {
-    store.dispatch(VM.Actions.setPageTitle(e.currentTarget.value))
     dispatch.editModel.setPageTitle(e.currentTarget.value)
   }, [])
 
@@ -111,13 +62,14 @@ const EditPageTitle: React.FC<{}> = ({ }) => {
 
 const EditBanner: React.FC<{}> = ({ }) => {
   const banner = useSelector((state: RootState) => state.editModel.banner)
-  const store = useStore()
+  const dispatch = useDispatch<Dispatch>()
 
   const setBannerTitle = React.useCallback((e: React.FormEvent<HTMLInputElement>) => {
-    store.dispatch(VM.Actions.Banner.setBannerTitle(e.currentTarget.value))
+    dispatch.editModel.setBannerTitle(e.currentTarget.value)
   }, [])
 
   const setCashbackText = React.useCallback((e: React.FormEvent<HTMLInputElement>) => {
+    dispatch.editModel.setBannerCachback(e.currentTarget.value)
   }, [])
 
   return (
@@ -134,16 +86,6 @@ const EditBanner: React.FC<{}> = ({ }) => {
     </div>
   )
 }
-
-
-
-
-const options = [
-  { value: "Abe", label: "Abe", customAbbreviation: "A" },
-  { value: "John", label: "John", customAbbreviation: "J" },
-  { value: "Dustin", label: "Dustin", customAbbreviation: "D" }
-];
-
 
 type Store = { id: number, url_slug: string, name: string, image_url: string }
 

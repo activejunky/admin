@@ -29,6 +29,13 @@ export const editModel = createModel<RootModel>()({
     setPageTitle(state, payload: string) {
       return { ...state, pageTitle: payload };
     },
+
+    setBannerTitle(state, payload: string) {
+      return { ...state, banner: { ...state.banner, title: payload } }
+    },
+    setBannerCachback(state, payload: string) {
+      return { ...state, banner: { ...state.banner, cashBackString: payload } }
+    }
   },
   effects: (dispatch) => ({
     // async incrementAsync(payload: number, state) {
