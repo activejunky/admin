@@ -1,17 +1,13 @@
-import { sensitiveHeaders } from 'http2'
+import { actionCreatorFactory } from '@nll/dux/Actions'
+import { caseFn, reducerFn } from '@nll/dux/Reducers'
+import * as Dux from '@nll/dux/Store'
 import { useObservableEagerState } from 'observable-hooks'
 import * as React from 'react'
 import Modal from 'react-modal'
-import { atom, useRecoilState, useRecoilValue } from 'recoil'
+import { Provider, useDispatch, useSelector } from "react-redux"
+import Select from "react-select"
 import * as Rx from 'rxjs'
-import * as RxO from 'rxjs/operators'
-import Select, { SelectOptionActionMeta } from "react-select";
-import * as Dux from '@nll/dux/Store'
-import { actionCreatorFactory, actionFactory } from '@nll/dux/Actions'
-import { caseFn, reducerFn } from '@nll/dux/Reducers'
-import { createModel, init, Model, Models, RematchDispatch, RematchRootState } from '@rematch/core'
-import { Provider, connect, useDispatch, useSelector } from "react-redux";
-import { Dispatch, emptyState, PageState, PageStore, RootState, store } from './DigitalEventsPageVM'
+import { Dispatch, emptyState, PageState, RootState, store } from './DigitalEventsPageVM'
 
 const customStyles = {
   content: {
@@ -27,11 +23,6 @@ const customStyles = {
 };
 
 
-
-const pageStateAtm = atom({
-  key: 'pageState',
-  default: emptyState
-})
 
 const PageStateCtx = React.createContext<null | Dux.Store<PageState>>(null)
 
@@ -74,12 +65,10 @@ function useStore() {
 
 export const DigitalEventsPage: React.FC<{}> = ({ }) => {
   const vm = React.useMemo(() => new VM(), [])
-  const pageState = useRecoilValue(pageStateAtm)
 
   return (
     <div style={{ width: '100vw', height: '100vh', padding: 20 }}>
       <h1>Digital Events</h1>
-      <div>{JSON.stringify(pageState)}</div>
 
       <Provider store={store}>
         <PageStateCtx.Provider value={vm.store}>
@@ -104,36 +93,31 @@ const Preview: React.FC<{}> = ({ }) => {
 
 const EditPageTitle: React.FC<{}> = ({ }) => {
   const store = useStore()
-  const curTitle = useStoreValue(store, (s) => s.pageTitle)
-  const [ps, setPs] = useRecoilState(pageStateAtm)
   const dispatch = useDispatch<Dispatch>()
-  // const inputPageTitle = useSelector((state: RootState) => state.editModel.pageTitle)
+  const inputPageTitle = useSelector((state: RootState) => state.editModel.pageTitle)
 
   const setPageTitle = React.useCallback((e: React.FormEvent<HTMLInputElement>) => {
-    setPs(cp => ({ ...cp, pageTitle: e.currentTarget.value }))
     store.dispatch(VM.Actions.setPageTitle(e.currentTarget.value))
-    // dispatch.editModel.setPageTitle(e.currentTarget.value)
+    dispatch.editModel.setPageTitle(e.currentTarget.value)
   }, [])
 
   return (
     <div>
-      <input type="text" value={ps.pageTitle} onChange={setPageTitle} />
+      <input type="text" value={inputPageTitle} onChange={setPageTitle} />
     </div>
   )
 }
 
 
 const EditBanner: React.FC<{}> = ({ }) => {
+  const banner = useSelector((state: RootState) => state.editModel.banner)
   const store = useStore()
-  const [ps, setPs] = useRecoilState(pageStateAtm)
 
   const setBannerTitle = React.useCallback((e: React.FormEvent<HTMLInputElement>) => {
-    setPs(cp => ({ ...cp, banner: { ...cp.banner, title: e.currentTarget.value } }))
     store.dispatch(VM.Actions.Banner.setBannerTitle(e.currentTarget.value))
   }, [])
 
   const setCashbackText = React.useCallback((e: React.FormEvent<HTMLInputElement>) => {
-    setPs(cp => ({ ...cp, banner: { ...cp.banner, cashBackString: e.currentTarget.value } }))
   }, [])
 
   return (
@@ -141,11 +125,11 @@ const EditBanner: React.FC<{}> = ({ }) => {
       <h3>Banner</h3>
       <label style={{ display: 'flex', alignItems: 'center' }}>
         Title:
-        <input type="text" value={ps.banner.title} onChange={setBannerTitle} style={{ fontSize: 30, border: '1px solid red', display: 'flex', flexShrink: 1 }} />
+        <input type="text" value={banner.title} onChange={setBannerTitle} style={{ fontSize: 30, border: '1px solid red', display: 'flex', flexShrink: 1 }} />
       </label>
       <label style={{ display: 'flex', alignItems: 'center' }}>
         Cashback Text:
-        <input type="text" value={ps.banner.cashBackString} onChange={setCashbackText} style={{ fontSize: 20, display: 'flex', flexShrink: 1 }} />
+        <input type="text" value={banner.cashBackString} onChange={setCashbackText} style={{ fontSize: 20, display: 'flex', flexShrink: 1 }} />
       </label>
     </div>
   )
@@ -185,10 +169,10 @@ async function fetchHomePage(): Promise<HomepageData> {
 }
 
 const EditFeaturedStores: React.FC<{}> = ({ }) => {
-  const [ps, setPs] = useRecoilState(pageStateAtm)
   const [isShowingModal, setIsShowingModal] = React.useState(false)
   const [mbStores, setMbStores] = React.useState<null | Store[]>(null)
   const [selectedStore, setSelectedStore] = React.useState<null | string>()
+  const stores = useSelector((state: RootState) => state.editModel.stores)
 
   React.useEffect(() => {
     fetchHomePage().then(hp => {
@@ -213,7 +197,6 @@ const EditFeaturedStores: React.FC<{}> = ({ }) => {
     if (mbStores) {
       const newStore = mbStores.find(s => s.url_slug == storeSlug)!
       console.log("NEW STORE! ", newStore)
-      setPs(s => ({ ...s, stores: [...s.stores, newStore] }))
       setIsShowingModal(false)
     }
   }, [mbStores])
@@ -223,7 +206,7 @@ const EditFeaturedStores: React.FC<{}> = ({ }) => {
       <h3>Featured Stores</h3>
 
       <div style={{ display: 'flex', flexDirection: 'row' }}>
-        {ps.stores.map(s => {
+        {stores.map(s => {
           return (
             <div style={{ width: 100, height: 200, border: '1px solid black', marginRight: 20 }}>{s.name}</div>
           )
