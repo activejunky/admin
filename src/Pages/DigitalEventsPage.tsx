@@ -107,17 +107,17 @@ const EditPageTitle: React.FC<{}> = ({ }) => {
   const curTitle = useStoreValue(store, (s) => s.pageTitle)
   const [ps, setPs] = useRecoilState(pageStateAtm)
   const dispatch = useDispatch<Dispatch>()
-  const inputPageTitle = useSelector((state: RootState) => state.editModel.pageTitle)
+  // const inputPageTitle = useSelector((state: RootState) => state.editModel.pageTitle)
 
   const setPageTitle = React.useCallback((e: React.FormEvent<HTMLInputElement>) => {
     setPs(cp => ({ ...cp, pageTitle: e.currentTarget.value }))
     store.dispatch(VM.Actions.setPageTitle(e.currentTarget.value))
-    dispatch.editModel.setPageTitle(e.currentTarget.value)
+    // dispatch.editModel.setPageTitle(e.currentTarget.value)
   }, [])
 
   return (
     <div>
-      <input type="text" value={inputPageTitle} onChange={setPageTitle} />
+      <input type="text" value={ps.pageTitle} onChange={setPageTitle} />
     </div>
   )
 }

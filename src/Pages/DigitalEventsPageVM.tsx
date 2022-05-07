@@ -1,4 +1,7 @@
 import { createModel, init, Models, RematchDispatch, RematchRootState } from '@rematch/core'
+import createSelectPlugin from '@rematch/select'
+import createCachedSelector from 're-reselect'
+import { Root } from 'react-dom/client'
 
 type BannerContent = {
   title: string
@@ -41,7 +44,11 @@ export interface RootModel extends Models<RootModel> {
 
 export const models: RootModel = { editModel };
 
-export const store = init({ models })
+const selectPlugin = createSelectPlugin<RootModel>({ selectorCreator: createCachedSelector })
+export const store = init({
+  models,
+  plugins: [selectPlugin],
+})
 export type PageStore = typeof store
 export type Dispatch = RematchDispatch<RootModel>
 export type RootState = RematchRootState<RootModel>
