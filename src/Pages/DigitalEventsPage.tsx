@@ -2,7 +2,8 @@ import * as React from 'react'
 import Modal from 'react-modal'
 import { Provider, useDispatch, useSelector } from "react-redux"
 import Select from "react-select"
-import { AJStore, Dispatch, RootState, store } from './DigitalEventsPageVM'
+import { AJStore } from '../Models'
+import { Dispatch, RootState, store } from './DigitalEventsPageVM'
 
 const customStyles = {
   content: {
@@ -46,14 +47,15 @@ const Preview: React.FC<{}> = ({ }) => {
 
 const EditPageTitle: React.FC<{}> = ({ }) => {
   const dispatch = useDispatch<Dispatch>()
-  const inputPageTitle = useSelector((state: RootState) => state.editModel.pageTitle)
+  const inputPageTitle = useSelector((state: RootState) => state.editModel.form.pageTitle)
 
   const setPageTitle = React.useCallback((e: React.FormEvent<HTMLInputElement>) => {
     dispatch.editModel.setPageTitle(e.currentTarget.value)
   }, [])
 
   return (
-    <div>
+    <div style={{ width: '100%', display: 'flex', marginBottom: 30 }}>
+      <h3>Page Title</h3>
       <input type="text" value={inputPageTitle} onChange={setPageTitle} />
     </div>
   )
@@ -61,7 +63,7 @@ const EditPageTitle: React.FC<{}> = ({ }) => {
 
 
 const EditBanner: React.FC<{}> = ({ }) => {
-  const banner = useSelector((state: RootState) => state.editModel.banner)
+  const banner = useSelector((state: RootState) => state.editModel.form.banner)
   const dispatch = useDispatch<Dispatch>()
 
   const setBannerTitle = React.useCallback((e: React.FormEvent<HTMLInputElement>) => {
@@ -114,7 +116,7 @@ const EditFeaturedStores: React.FC<{}> = ({ }) => {
   const [isShowingModal, setIsShowingModal] = React.useState(false)
   const [mbStores, setMbStores] = React.useState<null | Store[]>(null)
   const [selectedStore, setSelectedStore] = React.useState<null | string>()
-  const stores = useSelector((state: RootState) => state.editModel.stores)
+  const stores = useSelector((state: RootState) => state.editModel.form.featuredStores)
   const dispatch = useDispatch<Dispatch>()
 
   React.useEffect(() => {
@@ -146,7 +148,7 @@ const EditFeaturedStores: React.FC<{}> = ({ }) => {
   }, [mbStores])
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start' }}>
+    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', marginTop: 30 }}>
       <h3>Featured Stores</h3>
 
       <div style={{ display: 'flex', flexDirection: 'row' }}>

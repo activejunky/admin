@@ -4,50 +4,68 @@ import createSelectPlugin from '@rematch/select'
 import produce from 'immer'
 import createCachedSelector from 're-reselect'
 import { Root } from 'react-dom/client'
+import { AJStore, Deal } from '../Models'
 
 type BannerContent = {
   title: string
   cashBackString: string
 }
 
-export type AJStore = { id: number, url_slug: string, name: string, image_url: string }
 
 export type PageState = {
-  pageTitle: string
-  banner: BannerContent,
-  stores: AJStore[]
+  form: CreateDigitalEventFormInput
+
+  isFetching: boolean
 }
 
-export const emptyState: PageState = {
+export type CreateDigitalEventFormInput = {
+  pageTitle: string
+  banner: BannerContent,
+  featuredStores: AJStore[],
+  featuredDeals: Deal[]
+}
+
+export const emptyFormState: CreateDigitalEventFormInput = {
   pageTitle: '',
   banner: { title: '', cashBackString: '' },
-  stores: []
+  featuredStores: [],
+  featuredDeals: []
+}
+
+const emptyPageState: PageState = {
+  form: emptyFormState,
+  isFetching: false
 }
 
 export const editModel = createModel<RootModel>()({
-  state: emptyState, // initial state
+  state: emptyPageState, // initial state
   reducers: {
     // handle state changes with pure functions
     setPageTitle(state, payload: string) {
-      return { ...state, pageTitle: payload };
+      return { ...state, form: { ...state.form, pageTitle: payload } };
     },
 
     setBannerTitle(state, payload: string) {
-      return { ...state, banner: { ...state.banner, title: payload } }
+      const withNewTitle = { ...state.form, banner: { ...state.form.banner, title: payload } }
+      return { ...state, form: withNewTitle }
     },
     setBannerCachback(state, payload: string) {
-      return { ...state, banner: { ...state.banner, cashBackString: payload } }
+      const withNewForm = { ...state.form, banner: { ...state.form.banner, cashBackString: payload } }
+      return { ...state, form: withNewForm }
     },
 
     addFeaturedStore(state, payload: AJStore) {
-      return { ...state, stores: [...state.stores, payload] }
+      const withNewForm = produce(state.form, draft => {
+        draft.featuredStores.push(payload)
+      })
+      return { ...state, form: withNewForm }
     },
     removeFeaturedStore(state, payload: string) {
-      const withRemovedStore = produce(state.stores, draft => {
+      const withRemovedStore = produce(state.form.featuredStores, draft => {
         const index = draft.findIndex(s => s.url_slug === payload)
         if (index !== -1) draft.splice(index, 1)
       })
-      return { ...state, stores: withRemovedStore }
+      return { ...state, form: { ...state.form, featuredStores: withRemovedStore } }
     }
   },
   effects: (dispatch) => ({
