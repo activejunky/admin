@@ -1,5 +1,7 @@
 import { createModel, init, Models, RematchDispatch, RematchRootState } from '@rematch/core'
+import immerPlugin from '@rematch/immer'
 import createSelectPlugin from '@rematch/select'
+import produce from 'immer'
 import createCachedSelector from 're-reselect'
 import { Root } from 'react-dom/client'
 
@@ -37,8 +39,15 @@ export const editModel = createModel<RootModel>()({
       return { ...state, banner: { ...state.banner, cashBackString: payload } }
     },
 
-    addStore(state, payload: AJStore) {
+    addFeaturedStore(state, payload: AJStore) {
       return { ...state, stores: [...state.stores, payload] }
+    },
+    removeFeaturedStore(state, payload: string) {
+      const withRemovedStore = produce(state.stores, draft => {
+        const index = draft.findIndex(s => s.url_slug === payload)
+        if (index !== -1) draft.splice(index, 1)
+      })
+      return { ...state, stores: withRemovedStore }
     }
   },
   effects: (dispatch) => ({
@@ -55,10 +64,12 @@ export interface RootModel extends Models<RootModel> {
 
 export const models: RootModel = { editModel };
 
-const selectPlugin = createSelectPlugin<RootModel>({ selectorCreator: createCachedSelector })
-export const store = init({
+export const store = init<RootModel>({
   models,
-  plugins: [selectPlugin],
+  plugins: [
+    createSelectPlugin({ selectorCreator: createCachedSelector }),
+    immerPlugin()
+  ],
 })
 export type PageStore = typeof store
 export type Dispatch = RematchDispatch<RootModel>

@@ -140,7 +140,7 @@ const EditFeaturedStores: React.FC<{}> = ({ }) => {
     if (mbStores) {
       const newStore = mbStores.find(s => s.url_slug == storeSlug)!
       console.log("NEW STORE! ", newStore)
-      dispatch.editModel.addStore(newStore)
+      dispatch.editModel.addFeaturedStore(newStore)
       setIsShowingModal(false)
     }
   }, [mbStores])
@@ -151,7 +151,7 @@ const EditFeaturedStores: React.FC<{}> = ({ }) => {
 
       <div style={{ display: 'flex', flexDirection: 'row' }}>
         {stores.map(s => (
-          <StoreIcon ajStore={s} />
+          <StoreIcon ajStore={s} onRemove={() => { dispatch.editModel.removeFeaturedStore(s.url_slug) }} />
         ))}
 
         <div style={{ width: 100, height: 200, border: '1px dotted black', display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center' }} onClick={openModal}>
@@ -207,9 +207,10 @@ const EditFeaturedStores: React.FC<{}> = ({ }) => {
   )
 }
 
-const StoreIcon: React.FC<{ ajStore: AJStore }> = ({ ajStore }) => (
+const StoreIcon: React.FC<{ ajStore: AJStore, onRemove: () => void }> = ({ ajStore, onRemove }) => (
   <div style={{ width: 100, height: 200, border: '1px solid black', marginRight: 20, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
     {ajStore.name}
     <img src={ajStore.image_url} style={{ width: 20, height: 20 }} />
+    <button onClick={onRemove}>X</button>
   </div>
 )
