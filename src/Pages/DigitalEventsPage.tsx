@@ -2,7 +2,8 @@ import * as React from 'react'
 import Modal from 'react-modal'
 import { Provider, useDispatch, useSelector } from "react-redux"
 import Select from "react-select"
-import { AJStore } from '../Models'
+import { Backend } from '../Backend/Api'
+import { AJStore, Deal } from '../Models'
 import { Dispatch, RootState, store } from './DigitalEventsPageVM'
 
 const customStyles = {
@@ -32,6 +33,7 @@ export const DigitalEventsPage: React.FC<{}> = ({ }) => {
         <EditPageTitle />
         <EditBanner />
         <EditFeaturedStores />
+        <EditFeaturedDeals />
       </Provider>
     </div>
   )
@@ -213,6 +215,109 @@ const StoreIcon: React.FC<{ ajStore: AJStore, onRemove: () => void }> = ({ ajSto
   <div style={{ width: 100, height: 200, border: '1px solid black', marginRight: 20, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
     {ajStore.name}
     <img src={ajStore.image_url} style={{ width: 20, height: 20 }} />
+    <button onClick={onRemove}>X</button>
+  </div>
+)
+
+
+const EditFeaturedDeals: React.FC<{}> = ({ }) => {
+  const [isShowingModal, setIsShowingModal] = React.useState(false)
+  const [mbFetchedDeals, setFetchedDeals] = React.useState<null | Deal[]>(null)
+  const [selectedDeal, setSelectedDeal] = React.useState<null | number>()
+  const chosenDeals = useSelector((state: RootState) => state.editModel.form.featuredDeals)
+  const dispatch = useDispatch<Dispatch>()
+
+  React.useEffect(() => {
+    Backend.searchDeals("shoes").then(r => {
+      console.log("RESULT OF FETCHING DEALS! ", r)
+      setFetchedDeals(r)
+    })
+  }, [])
+
+  function openModal() {
+    setIsShowingModal(true);
+  }
+
+  function closeModal() {
+    setIsShowingModal(false);
+  }
+
+  const onAdd = React.useCallback((dealId: number) => {
+    console.log("MB DEALS! ", mbFetchedDeals)
+    if (mbFetchedDeals) {
+      const newDeal = mbFetchedDeals.find(s => s.id == dealId)!
+      console.log("NEW STORE! ", newDeal)
+      dispatch.editModel.addFeaturedDeal(newDeal)
+      setIsShowingModal(false)
+    }
+  }, [mbFetchedDeals])
+
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', marginTop: 30 }}>
+      <h3>Featured Deals</h3>
+
+      <div style={{ display: 'flex', flexDirection: 'row' }}>
+        {chosenDeals.map(d => (
+          <DealThumb deal={d} onRemove={() => { }} />
+        ))}
+
+        <div style={{ width: 100, height: 200, border: '1px dotted black', display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center' }} onClick={openModal}>
+          Add Deal
+          <p>+</p>
+        </div>
+
+      </div>
+
+      <Modal
+        isOpen={isShowingModal}
+        onAfterOpen={() => { }}
+        onRequestClose={closeModal}
+        style={customStyles}
+        contentLabel="Example Modal"
+      >
+        <div style={{ width: '100%' }}>
+          <button onClick={closeModal}>close</button>
+          {mbFetchedDeals ?
+            (
+              <div>
+                <Select
+                  defaultValue={{ value: mbFetchedDeals[0].id, label: mbFetchedDeals[0].title }}
+                  onChange={p => { setSelectedDeal(p?.value) }}
+                  formatOptionLabel={({ value, label }) => (
+                    <div style={{ display: "flex", flexDirection: 'column' }}>
+                      <div>{label}</div>
+                    </div>
+                  )}
+                  options={mbFetchedDeals.map(s => ({ value: s.id, label: s.title }))}
+                />
+              </div>
+            )
+            :
+            (<></>)
+          }
+          <div>
+            {selectedDeal
+              ?
+              (
+
+                <button onClick={() => onAdd(selectedDeal)}>
+                  Add
+                </button>
+              )
+              :
+              (<></>)
+            }
+          </div>
+        </div>
+      </Modal>
+    </div>
+  )
+}
+
+const DealThumb: React.FC<{ deal: Deal, onRemove: () => void }> = ({ deal, onRemove }) => (
+  <div style={{ width: 100, height: 200, border: '1px solid black', marginRight: 20, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
+    {deal.title}
+    <img src={deal.store.image_url} style={{ width: 20, height: 20 }} />
     <button onClick={onRemove}>X</button>
   </div>
 )

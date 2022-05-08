@@ -66,6 +66,19 @@ export const editModel = createModel<RootModel>()({
         if (index !== -1) draft.splice(index, 1)
       })
       return { ...state, form: { ...state.form, featuredStores: withRemovedStore } }
+    },
+    addFeaturedDeal(state, payload: Deal) {
+      const withNewForm = produce(state.form, draft => {
+        draft.featuredDeals.push(payload)
+      })
+      return { ...state, form: withNewForm }
+    },
+    removeFeaturedDeal(state, payload: number) {
+      const withRemovedStore = produce(state.form.featuredDeals, draft => {
+        const index = draft.findIndex(s => s.id === payload)
+        if (index !== -1) draft.splice(index, 1)
+      })
+      return { ...state, form: { ...state.form, featuredDeals: withRemovedStore } }
     }
   },
   effects: (dispatch) => ({
