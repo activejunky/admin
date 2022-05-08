@@ -3,6 +3,8 @@ import EdiText from 'react-editext'
 import Modal from 'react-modal'
 import { Provider, useDispatch, useSelector } from "react-redux"
 import Select from "react-select"
+import { StylesProps } from 'react-select/dist/declarations/src/styles'
+import { Style } from 'util'
 import { Backend } from '../Backend/Api'
 import { AJStore, Deal } from '../Models'
 import { Dispatch, RootState, store } from './DigitalEventsPageVM'
@@ -30,12 +32,22 @@ export const DigitalEventsPage: React.FC<{}> = ({ }) => {
       <h1>Digital Events</h1>
 
       <Provider store={store}>
-        <div><Preview /></div>
+        {/* <div><Preview /></div> */}
+        <ControlPanel />
         <EditPageTitle />
         <EditBanner />
         <EditFeaturedStores />
         <EditFeaturedDeals />
       </Provider>
+    </div>
+  )
+}
+
+const ControlPanel: React.FC<{}> = ({ }) => {
+  return (
+    <div style={{ width: '100%', display: 'flex', justifyContent: 'center', alignItems: 'center', backgroundColor: 'lightgray', padding: 10 }}>
+      <button style={{ marginRight: 30 }}>Save Draft</button>
+      <button>Publish</button>
     </div>
   )
 }
@@ -51,15 +63,12 @@ const Preview: React.FC<{}> = ({ }) => {
 const EditPageTitle: React.FC<{}> = ({ }) => {
   const dispatch = useDispatch<Dispatch>()
   const inputPageTitle = useSelector((state: RootState) => state.editModel.form.pageTitle)
-  const [value, setValue] = React.useState(inputPageTitle);
+  const [value, _] = React.useState(inputPageTitle);
 
-  React.useEffect(() => {
-    dispatch.editModel.setPageTitle(value)
-  }, [value])
 
   const handleSave = (val: string) => {
     console.log('Edited Value -> ', val);
-    setValue(val);
+    dispatch.editModel.setPageTitle(value)
   };
 
   return (
@@ -74,26 +83,56 @@ const EditPageTitle: React.FC<{}> = ({ }) => {
 const EditBanner: React.FC<{}> = ({ }) => {
   const banner = useSelector((state: RootState) => state.editModel.form.banner)
   const dispatch = useDispatch<Dispatch>()
+  const [savedTitle, _] = React.useState(banner.title)
+  const [savedCashbackStr, s] = React.useState(banner.cashBackString)
+  const [savedImageUrl, ssiurl] = React.useState(banner.backgroundImageUrl ?? "")
 
-  const setBannerTitle = React.useCallback((e: React.FormEvent<HTMLInputElement>) => {
-    dispatch.editModel.setBannerTitle(e.currentTarget.value)
-  }, [])
+  const setBannerTitle = (v: string) => {
+    // setSavedTitle(v)
+    dispatch.editModel.setBannerTitle(v)
+  }
 
-  const setCashbackText = React.useCallback((e: React.FormEvent<HTMLInputElement>) => {
-    dispatch.editModel.setBannerCachback(e.currentTarget.value)
-  }, [])
+  const setCashbackText = (v: string) => {
+    dispatch.editModel.setBannerCachback(v)
+  }
+
+  const setBannerImageUrl = (v: string) => {
+    dispatch.editModel.setBannerImageUrl(v)
+  }
+
+  const divStyleBase: React.CSSProperties = {
+    width: '80%', border: '3px solid black', display: 'flex', flexDirection: 'column', alignItems: 'flex-start'
+  }
+
+  const divStyle = savedImageUrl ? {
+    ...divStyleBase, backgroundImage: `url(${savedImageUrl})`
+  } : divStyleBase
+
+  React.useEffect(() => {
+    console.log("SAVED IMAGE URL! ", savedImageUrl)
+  }, [savedImageUrl])
 
   return (
-    <div style={{ width: '80%', border: '3px solid black', display: 'flex', flexDirection: 'column', alignItems: 'flex-start' }}>
+    <div style={banner.backgroundImageUrl ? { ...divStyleBase, backgroundImage: `url(${banner.backgroundImageUrl})` } : divStyleBase}>
       <h3>Banner</h3>
-      <label style={{ display: 'flex', alignItems: 'center' }}>
-        Title:
-        <input type="text" value={banner.title} onChange={setBannerTitle} style={{ fontSize: 30, border: '1px solid red', display: 'flex', flexShrink: 1 }} />
-      </label>
-      <label style={{ display: 'flex', alignItems: 'center' }}>
-        Cashback Text:
-        <input type="text" value={banner.cashBackString} onChange={setCashbackText} style={{ fontSize: 20, display: 'flex', flexShrink: 1 }} />
-      </label>
+      <div style={{ marginBottom: 10, display: 'flex' }}>
+        <label style={{ display: 'flex', alignItems: 'center', marginRight: 10, fontWeight: 'bold' }}>
+          Title:
+        </label>
+        <EdiText type="text" value={savedTitle} onSave={setBannerTitle} />
+      </div>
+      <div style={{ marginBottom: 10, display: 'flex' }}>
+        <label style={{ display: 'flex', alignItems: 'center', marginRight: 10, fontWeight: 'bold' }}>
+          Cashback Text:
+        </label>
+        <EdiText type="text" value={savedCashbackStr} onSave={setCashbackText} />
+      </div>
+      <div style={{ marginBottom: 10, display: 'flex' }}>
+        <label style={{ display: 'flex', alignItems: 'center', marginRight: 10, fontWeight: 'bold' }}>
+          Image Url:
+        </label>
+        <EdiText type="text" value={savedImageUrl} onSave={setBannerImageUrl} />
+      </div>
     </div>
   )
 }

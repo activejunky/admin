@@ -9,6 +9,7 @@ import { AJStore, Deal } from '../Models'
 type BannerContent = {
   title: string
   cashBackString: string
+  backgroundImageUrl: string | null
 }
 
 
@@ -27,7 +28,7 @@ export type CreateDigitalEventFormInput = {
 
 export const emptyFormState: CreateDigitalEventFormInput = {
   pageTitle: '',
-  banner: { title: '', cashBackString: '' },
+  banner: { title: '', cashBackString: '', backgroundImageUrl: null },
   featuredStores: [],
   featuredDeals: []
 }
@@ -51,6 +52,10 @@ export const editModel = createModel<RootModel>()({
     },
     setBannerCachback(state, payload: string) {
       const withNewForm = { ...state.form, banner: { ...state.form.banner, cashBackString: payload } }
+      return { ...state, form: withNewForm }
+    },
+    setBannerImageUrl(state, payload: string) {
+      const withNewForm = { ...state.form, banner: { ...state.form.banner, backgroundImageUrl: payload } }
       return { ...state, form: withNewForm }
     },
 
