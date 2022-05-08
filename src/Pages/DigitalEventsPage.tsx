@@ -2,7 +2,7 @@ import * as React from 'react'
 import Modal from 'react-modal'
 import { Provider, useDispatch, useSelector } from "react-redux"
 import Select from "react-select"
-import { Dispatch, RootState, store } from './DigitalEventsPageVM'
+import { AJStore, Dispatch, RootState, store } from './DigitalEventsPageVM'
 
 const customStyles = {
   content: {
@@ -150,11 +150,9 @@ const EditFeaturedStores: React.FC<{}> = ({ }) => {
       <h3>Featured Stores</h3>
 
       <div style={{ display: 'flex', flexDirection: 'row' }}>
-        {stores.map(s => {
-          return (
-            <div style={{ width: 100, height: 200, border: '1px solid black', marginRight: 20 }}>{s.name}</div>
-          )
-        })}
+        {stores.map(s => (
+          <StoreIcon ajStore={s} />
+        ))}
 
         <div style={{ width: 100, height: 200, border: '1px dotted black', display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center' }} onClick={openModal}>
           Add Store
@@ -208,3 +206,10 @@ const EditFeaturedStores: React.FC<{}> = ({ }) => {
     </div>
   )
 }
+
+const StoreIcon: React.FC<{ ajStore: AJStore }> = ({ ajStore }) => (
+  <div style={{ width: 100, height: 200, border: '1px solid black', marginRight: 20, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
+    {ajStore.name}
+    <img src={ajStore.image_url} style={{ width: 20, height: 20 }} />
+  </div>
+)
