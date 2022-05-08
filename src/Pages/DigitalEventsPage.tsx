@@ -1,4 +1,5 @@
 import * as React from 'react'
+import EdiText from 'react-editext'
 import Modal from 'react-modal'
 import { Provider, useDispatch, useSelector } from "react-redux"
 import Select from "react-select"
@@ -50,15 +51,21 @@ const Preview: React.FC<{}> = ({ }) => {
 const EditPageTitle: React.FC<{}> = ({ }) => {
   const dispatch = useDispatch<Dispatch>()
   const inputPageTitle = useSelector((state: RootState) => state.editModel.form.pageTitle)
+  const [value, setValue] = React.useState(inputPageTitle);
 
-  const setPageTitle = React.useCallback((e: React.FormEvent<HTMLInputElement>) => {
-    dispatch.editModel.setPageTitle(e.currentTarget.value)
-  }, [])
+  React.useEffect(() => {
+    dispatch.editModel.setPageTitle(value)
+  }, [value])
+
+  const handleSave = (val: string) => {
+    console.log('Edited Value -> ', val);
+    setValue(val);
+  };
 
   return (
-    <div style={{ width: '100%', display: 'flex', marginBottom: 30 }}>
-      <h3>Page Title</h3>
-      <input type="text" value={inputPageTitle} onChange={setPageTitle} />
+    <div style={{ width: '100%', display: 'flex', marginBottom: 30, alignItems: 'center' }}>
+      <h3 style={{ marginRight: 18 }}>Page Title</h3>
+      <EdiText type="text" value={value} onSave={handleSave} />
     </div>
   )
 }
