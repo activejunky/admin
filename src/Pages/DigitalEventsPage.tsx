@@ -416,7 +416,7 @@ const SectionContainer: React.FC<React.PropsWithChildren<{ onRemove?: () => void
         ?
         (
 
-          <div style={{ width: '100%', zIndex: 10, display: 'flex', justifyContent: 'flex-end' }}>
+          <div style={{ width: '100%', display: 'flex', justifyContent: 'flex-end' }}>
             <button onClick={onRemove}>Remove Section</button>
           </div>
         )
@@ -433,7 +433,7 @@ const EditAdditionalStores: React.FC<{}> = ({ }) => {
   const [isShowingModal, setIsShowingModal] = React.useState(false)
   const [mbStores, setMbStores] = React.useState<null | Store[]>(null)
   const [selectedStore, setSelectedStore] = React.useState<null | string>()
-  const stores = useSelector((state: RootState) => state.editModel.form.featuredStores)
+  const stores = useSelector((state: RootState) => state.editModel.form.additionalStores!.stores)
   const dispatch = useDispatch<Dispatch>()
 
   React.useEffect(() => {
@@ -459,7 +459,7 @@ const EditAdditionalStores: React.FC<{}> = ({ }) => {
     if (mbStores) {
       const newStore = mbStores.find(s => s.url_slug == storeSlug)!
       console.log("NEW STORE! ", newStore)
-      dispatch.editModel.addFeaturedStore(newStore)
+      dispatch.editModel.addAdditionalStore(newStore)
       setIsShowingModal(false)
     }
   }, [mbStores])
@@ -496,7 +496,7 @@ const EditAdditionalStores: React.FC<{}> = ({ }) => {
                   defaultValue={{ value: mbStores[0].url_slug, label: mbStores[0].name }}
                   onChange={p => { setSelectedStore(p?.value) }}
                   formatOptionLabel={({ value, label }) => (
-                    <div style={{ display: "flex", flexDirection: 'column' }}>
+                    <div id={label} style={{ display: "flex", flexDirection: 'column' }}>
                       <div>{label}</div>
                     </div>
                   )}

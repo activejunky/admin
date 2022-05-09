@@ -94,6 +94,12 @@ export const editModel = createModel<RootModel>()({
       } else {
         return { ...state, form: { ...state.form, additionalStores: null } }
       }
+    },
+    addAdditionalStore(state, payload: AJStore) {
+      const curSection = state.form.additionalStores
+      if (curSection) {
+        return { ...state, form: { ...state.form, additionalStores: { title: "Additional Stores", stores: [...curSection.stores, payload] } } }
+      }
     }
   },
   effects: (dispatch) => ({
