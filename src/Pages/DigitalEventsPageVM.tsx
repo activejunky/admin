@@ -23,14 +23,16 @@ export type CreateDigitalEventFormInput = {
   pageTitle: string
   banner: BannerContent,
   featuredStores: AJStore[],
-  featuredDeals: Deal[]
+  featuredDeals: Deal[],
+  additionalStores: null | { title: string, stores: AJStore[] }
 }
 
 export const emptyFormState: CreateDigitalEventFormInput = {
   pageTitle: '',
   banner: { title: '', cashBackString: '', backgroundImageUrl: null },
   featuredStores: [],
-  featuredDeals: []
+  featuredDeals: [],
+  additionalStores: null
 }
 
 const emptyPageState: PageState = {
@@ -84,6 +86,14 @@ export const editModel = createModel<RootModel>()({
         if (index !== -1) draft.splice(index, 1)
       })
       return { ...state, form: { ...state.form, featuredDeals: withRemovedStore } }
+    },
+
+    addAdditionalStoresSection(state, payload: boolean) {
+      if (payload) {
+        return { ...state, form: { ...state.form, additionalStores: { title: "Additional Stores", stores: [] } } }
+      } else {
+        return { ...state, form: { ...state.form, additionalStores: null } }
+      }
     }
   },
   effects: (dispatch) => ({

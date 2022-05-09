@@ -27,6 +27,7 @@ const customStyles = {
 
 
 export const DigitalEventsPage: React.FC<{}> = ({ }) => {
+
   return (
     <div style={{ width: '90vw', height: '100vh', padding: 20 }}>
       <h1>Create Digital Event</h1>
@@ -35,18 +36,44 @@ export const DigitalEventsPage: React.FC<{}> = ({ }) => {
         {/* <div><Preview /></div> */}
         <ControlPanel />
         <EditPageTitle />
-
-        <SectionContainer>
-          <EditBanner />
-        </SectionContainer>
-        <SectionContainer>
-          <EditFeaturedStores />
-        </SectionContainer>
-        <SectionContainer>
-          <EditFeaturedDeals />
-        </SectionContainer>
+        <AllSections />
       </Provider>
     </div>
+  )
+}
+
+const AllSections: React.FC<{}> = ({ }) => {
+  const dispatch = useDispatch<Dispatch>()
+  const additionalStoresSection = useSelector((s: RootState) => s.editModel.form.additionalStores)
+
+  return (
+    <>
+      <SectionContainer>
+        <EditBanner />
+      </SectionContainer>
+      <SectionContainer>
+        <EditFeaturedStores />
+      </SectionContainer>
+      {additionalStoresSection
+        ?
+        (
+          <SectionContainer onRemove={() => { dispatch.editModel.addAdditionalStoresSection(false) }}>
+            <EditAdditionalStores />
+          </SectionContainer>
+        )
+        :
+        (
+          <div style={{ width: '100%', display: 'flex', marginTop: 20, marginBottom: 20, height: 30 }}>
+            <button onClick={() => { dispatch.editModel.addAdditionalStoresSection(true) }}>
+              Add Additional Stores Section
+            </button>
+          </div>
+        )
+      }
+      <SectionContainer>
+        <EditFeaturedDeals />
+      </SectionContainer>
+    </>
   )
 }
 
@@ -382,13 +409,119 @@ const DealThumb: React.FC<{ deal: Deal, onRemove: () => void }> = ({ deal, onRem
   </div>
 )
 
-const SectionContainer: React.FC<React.PropsWithChildren<{}>> = ({ children }) => {
+const SectionContainer: React.FC<React.PropsWithChildren<{ onRemove?: () => void }>> = ({ children, onRemove }) => {
   return (
-    <div style={{ position: 'relative', border: '1px solid gray', borderRadius: 5, width: '100%', display: 'flex', flexDirection: 'column', marginBottom: 20 }}>
-      <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 30, zIndex: 10, display: 'flex', justifyContent: 'flex-end' }}>
-        <button>Remove Section</button>
-      </div>
+    <div style={{ border: '1px solid gray', borderRadius: 5, minHeight: 200, width: '100%', display: 'flex', flexDirection: 'column', marginBottom: 20 }}>
+      {onRemove
+        ?
+        (
+
+          <div style={{ width: '100%', zIndex: 10, display: 'flex', justifyContent: 'flex-end' }}>
+            <button onClick={onRemove}>Remove Section</button>
+          </div>
+        )
+        :
+        (<></>)
+      }
       {children}
+    </div>
+  )
+}
+
+
+const EditAdditionalStores: React.FC<{}> = ({ }) => {
+  const [isShowingModal, setIsShowingModal] = React.useState(false)
+  const [mbStores, setMbStores] = React.useState<null | Store[]>(null)
+  const [selectedStore, setSelectedStore] = React.useState<null | string>()
+  const stores = useSelector((state: RootState) => state.editModel.form.featuredStores)
+  const dispatch = useDispatch<Dispatch>()
+
+  React.useEffect(() => {
+    fetchHomePage().then(hp => {
+      console.log("MB STORES! ", hp.store_carousels)
+      setMbStores(hp.store_carousels.flatMap(sc => sc.stores))
+    })
+      .catch(e => {
+        console.error("FAILED! ", e)
+      })
+  }, [])
+
+  function openModal() {
+    setIsShowingModal(true);
+  }
+
+  function closeModal() {
+    setIsShowingModal(false);
+  }
+
+  const onAdd = React.useCallback((storeSlug: string) => {
+    console.log("MB STORES! ", mbStores)
+    if (mbStores) {
+      const newStore = mbStores.find(s => s.url_slug == storeSlug)!
+      console.log("NEW STORE! ", newStore)
+      dispatch.editModel.addFeaturedStore(newStore)
+      setIsShowingModal(false)
+    }
+  }, [mbStores])
+
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', marginTop: 30 }}>
+      <h3>Additional Stores</h3>
+
+      <div style={{ display: 'flex', flexDirection: 'row' }}>
+        {stores.map(s => (
+          <StoreIcon ajStore={s} onRemove={() => { dispatch.editModel.removeFeaturedStore(s.url_slug) }} />
+        ))}
+
+        <div style={{ width: 100, height: 200, border: '1px dotted black', display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center' }} onClick={openModal}>
+          Add Store
+          <p>+</p>
+        </div>
+
+      </div>
+
+      <Modal
+        isOpen={isShowingModal}
+        onAfterOpen={() => { }}
+        onRequestClose={closeModal}
+        style={customStyles}
+        contentLabel="Example Modal"
+      >
+        <div style={{ width: '100%' }}>
+          <button onClick={closeModal}>close</button>
+          {mbStores ?
+            (
+              <div>
+                <Select
+                  defaultValue={{ value: mbStores[0].url_slug, label: mbStores[0].name }}
+                  onChange={p => { setSelectedStore(p?.value) }}
+                  formatOptionLabel={({ value, label }) => (
+                    <div style={{ display: "flex", flexDirection: 'column' }}>
+                      <div>{label}</div>
+                    </div>
+                  )}
+                  options={mbStores.map(s => ({ value: s.url_slug, label: s.name }))}
+                />
+              </div>
+            )
+            :
+            (<></>)
+          }
+          <div>
+            {selectedStore
+              ?
+              (
+
+                <button onClick={() => onAdd(selectedStore)}>
+                  Add
+                </button>
+              )
+              :
+              (<></>)
+            }
+          </div>
+        </div>
+      </Modal>
     </div>
   )
 }
