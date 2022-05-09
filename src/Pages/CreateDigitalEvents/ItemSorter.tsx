@@ -33,7 +33,7 @@ function SortableItem(props: { id: string, stores: AJStore[], onRemove: (urlSlug
 
   const style = {
     transform: CSS.Transform.toString(transform),
-    transition,
+    transition
   };
 
   return (
@@ -53,10 +53,9 @@ function SortableItem(props: { id: string, stores: AJStore[], onRemove: (urlSlug
 }
 
 const StoreIcon: React.FC<{ ajStore: AJStore, onRemove: () => void }> = ({ ajStore, onRemove }) => (
-  <div style={{ width: 100, height: 200, border: '1px solid black', marginRight: 20, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
+  <div style={{ width: 180, height: 200, border: '1px solid black', marginRight: 20, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
     {ajStore.name}
-    <img src={ajStore.image_url} style={{ width: 20, height: 20 }} />
-    <div onClick={() => { console.log("MEOW WORD") }}>meow</div>
+    <img src={ajStore.image_url} style={{ height: 30, width: 'auto', maxWidth: 150 }} />
     <button onClick={() => {
       console.log("CLICKED THIS! ")
       onRemove()
@@ -94,7 +93,7 @@ export const AJStoreDnD: React.FC<{ stores: AJStore[], onRemove: (urlSlug: strin
         items={items}
         strategy={horizontalListSortingStrategy}
       >
-        <div style={{ display: 'flex' }}>
+        <div style={{ display: 'flex', width: '100%', flexWrap: 'wrap' }}>
           {items.map(id => <SortableItem key={id} id={id} stores={stores} onRemove={onRemove} />)}
         </div>
       </SortableContext>

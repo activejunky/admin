@@ -239,7 +239,12 @@ const EditFeaturedStores: React.FC<{}> = ({ }) => {
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', marginTop: 30 }}>
-      <h3>Featured Stores</h3>
+      <div style={{ display: 'flex' }}>
+        <h3>Featured Stores</h3>
+        <button style={{ marginLeft: 20 }} onClick={openModal}>
+          Add Store
+        </button>
+      </div>
 
 
       <div style={{ display: 'flex', flexDirection: 'row' }}>
@@ -254,10 +259,6 @@ const EditFeaturedStores: React.FC<{}> = ({ }) => {
           <StoreIcon ajStore={s} onRemove={() => { dispatch.editModel.removeFeaturedStore(s.url_slug) }} />
         ))} */}
 
-        <div style={{ width: 100, height: 200, border: '1px dotted black', display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center' }} onClick={openModal}>
-          Add Store
-          <p>+</p>
-        </div>
 
       </div>
 
