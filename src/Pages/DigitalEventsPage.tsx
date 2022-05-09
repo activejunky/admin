@@ -28,16 +28,23 @@ const customStyles = {
 
 export const DigitalEventsPage: React.FC<{}> = ({ }) => {
   return (
-    <div style={{ width: '100vw', height: '100vh', padding: 20 }}>
-      <h1>Digital Events</h1>
+    <div style={{ width: '90vw', height: '100vh', padding: 20 }}>
+      <h1>Create Digital Event</h1>
 
       <Provider store={store}>
         {/* <div><Preview /></div> */}
         <ControlPanel />
         <EditPageTitle />
-        <EditBanner />
-        <EditFeaturedStores />
-        <EditFeaturedDeals />
+
+        <SectionContainer>
+          <EditBanner />
+        </SectionContainer>
+        <SectionContainer>
+          <EditFeaturedStores />
+        </SectionContainer>
+        <SectionContainer>
+          <EditFeaturedDeals />
+        </SectionContainer>
       </Provider>
     </div>
   )
@@ -47,6 +54,7 @@ const ControlPanel: React.FC<{}> = ({ }) => {
   return (
     <div style={{ width: '100%', display: 'flex', justifyContent: 'center', alignItems: 'center', backgroundColor: 'lightgray', padding: 10 }}>
       <button style={{ marginRight: 30 }}>Save Draft</button>
+      <button style={{ marginRight: 30 }}>Preview</button>
       <button>Publish</button>
     </div>
   )
@@ -113,7 +121,7 @@ const EditBanner: React.FC<{}> = ({ }) => {
   }, [savedImageUrl])
 
   return (
-    <div style={banner.backgroundImageUrl ? { ...divStyleBase, backgroundImage: `url(${banner.backgroundImageUrl})` } : divStyleBase}>
+    <div style={divStyleBase}>
       <h3>Banner</h3>
       <div style={{ marginBottom: 10, display: 'flex' }}>
         <label style={{ display: 'flex', alignItems: 'center', marginRight: 10, fontWeight: 'bold' }}>
@@ -127,11 +135,17 @@ const EditBanner: React.FC<{}> = ({ }) => {
         </label>
         <EdiText type="text" value={savedCashbackStr} onSave={setCashbackText} />
       </div>
-      <div style={{ marginBottom: 10, display: 'flex' }}>
+      <div style={{ marginBottom: 10, display: 'flex', alignItems: 'center' }}>
         <label style={{ display: 'flex', alignItems: 'center', marginRight: 10, fontWeight: 'bold' }}>
           Image Url:
         </label>
         <EdiText type="text" value={savedImageUrl} onSave={setBannerImageUrl} />
+        {banner.backgroundImageUrl
+          ?
+          (<img src={banner.backgroundImageUrl} style={{ width: 200, height: 100, border: '1px solid black' }} />)
+          :
+          (<></>)
+        }
       </div>
     </div>
   )
@@ -367,3 +381,14 @@ const DealThumb: React.FC<{ deal: Deal, onRemove: () => void }> = ({ deal, onRem
     <button onClick={onRemove}>X</button>
   </div>
 )
+
+const SectionContainer: React.FC<React.PropsWithChildren<{}>> = ({ children }) => {
+  return (
+    <div style={{ position: 'relative', border: '1px solid gray', borderRadius: 5, width: '100%', display: 'flex', flexDirection: 'column', marginBottom: 20 }}>
+      <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 30, zIndex: 10, display: 'flex', justifyContent: 'flex-end' }}>
+        <button>Remove Section</button>
+      </div>
+      {children}
+    </div>
+  )
+}
