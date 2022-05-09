@@ -7,6 +7,7 @@ import { StylesProps } from 'react-select/dist/declarations/src/styles'
 import { Style } from 'util'
 import { Backend } from '../Backend/Api'
 import { AJStore, Deal } from '../Models'
+import { AJStoreDnD } from './CreateDigitalEvents/ItemSorter'
 import { Dispatch, RootState, store } from './DigitalEventsPageVM'
 
 const customStyles = {
@@ -240,10 +241,18 @@ const EditFeaturedStores: React.FC<{}> = ({ }) => {
     <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', marginTop: 30 }}>
       <h3>Featured Stores</h3>
 
+
       <div style={{ display: 'flex', flexDirection: 'row' }}>
-        {stores.map(s => (
+
+        <AJStoreDnD
+          stores={stores}
+          onRemove={(slug) => {
+            dispatch.editModel.removeFeaturedStore(slug)
+          }}
+        />
+        {/* {stores.map(s => (
           <StoreIcon ajStore={s} onRemove={() => { dispatch.editModel.removeFeaturedStore(s.url_slug) }} />
-        ))}
+        ))} */}
 
         <div style={{ width: 100, height: 200, border: '1px dotted black', display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center' }} onClick={openModal}>
           Add Store
