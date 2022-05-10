@@ -78,10 +78,29 @@ const AllSections: React.FC<{}> = ({ }) => {
   )
 }
 
+async function saveDraft(content: Object) {
+  const body: BodyInit = JSON.stringify({ content })
+  const reqInit: RequestInit = { method: 'POST', body, headers: { 'Content-Type': 'application/json' } }
+  const url = "http://localhost:3000/headless_digital_events/4272657c-1294-4a63-a5cf-43d845694afa/save"
+  const r = await fetch(url, reqInit)
+  console.log("R! ", r.status)
+}
+
 const ControlPanel: React.FC<{}> = ({ }) => {
+  const curForm = useSelector((r: RootState) => r.editModel.form)
+
+  const onSaveDraft = React.useCallback(() => {
+    console.log("CUR FORM! ", curForm)
+    saveDraft(curForm).then(_ => {
+      console.log("FINISHED SAVING! ")
+    })
+  }, [curForm])
+
   return (
     <div style={{ width: '100%', display: 'flex', justifyContent: 'center', alignItems: 'center', backgroundColor: 'lightgray', padding: 10 }}>
-      <button type="submit" className="bg-blue-500 text-white py-2 px-4" style={{ marginRight: 30 }}>Save Draft</button>
+      <button className="bg-blue-500 text-white py-2 px-4 mr-30" onClick={() => { onSaveDraft() }}>
+        Save Draft
+      </button>
       <button style={{ marginRight: 30 }}>Preview</button>
       <button className="bg-orange-500 text-white py-2 px-4">Publish</button>
     </div>
