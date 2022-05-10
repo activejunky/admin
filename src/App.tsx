@@ -9,11 +9,12 @@ function App() {
     <div className="App">
       <Routes>
         <Route path="/" element={<Login />} />
-        <Route path="/cms" element={<DigitalEventsPage />} />
+        <Route path="/cms/:id" element={<DigitalEventsPage />} />
       </Routes>
     </div>
   );
 }
+
 
 const Login: React.FC<{}> = ({ }) => {
   const [inputEmail, setInputEmail] = React.useState<string>('')

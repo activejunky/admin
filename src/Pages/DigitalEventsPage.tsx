@@ -2,8 +2,10 @@ import * as React from 'react'
 import EdiText from 'react-editext'
 import Modal from 'react-modal'
 import { Provider, useDispatch, useSelector } from "react-redux"
+import { useParams } from 'react-router-dom'
 import Select from "react-select"
 import { StylesProps } from 'react-select/dist/declarations/src/styles'
+import { UnaryExpression } from 'typescript'
 import { Style } from 'util'
 import { Backend } from '../Backend/Api'
 import { AJStore, Deal } from '../Models'
@@ -25,20 +27,28 @@ const customStyles = {
 
 
 
-
+const CurIdContext = React.createContext<undefined | string>(undefined)
+function useCurId() {
+  const cid = React.useContext(CurIdContext)
+  return cid!
+}
 
 export const DigitalEventsPage: React.FC<{}> = ({ }) => {
+  const { id } = useParams()
 
   return (
     <div style={{ width: '90vw', height: '100vh', padding: 20 }}>
       <h1>Create Digital Event</h1>
 
       <Provider store={store}>
-        {/* <div><Preview /></div> */}
-        <ControlPanel />
-        <EditPageTitle />
-        <AllSections />
+        <CurIdContext.Provider value={id}>
+          {/* <div><Preview /></div> */}
+          <ControlPanel />
+          <EditPageTitle />
+          <AllSections />
+        </CurIdContext.Provider>
       </Provider>
+
     </div>
   )
 }
@@ -78,23 +88,24 @@ const AllSections: React.FC<{}> = ({ }) => {
   )
 }
 
-async function saveDraft(content: Object) {
+async function saveDraft(id: string, content: Object) {
   const body: BodyInit = JSON.stringify({ content })
   const reqInit: RequestInit = { method: 'POST', body, headers: { 'Content-Type': 'application/json' } }
-  const url = "http://localhost:3000/headless_digital_events/4272657c-1294-4a63-a5cf-43d845694afa/save"
+  const url = `http://localhost:3000/headless_digital_events/${id}/save`
   const r = await fetch(url, reqInit)
   console.log("R! ", r.status)
 }
 
 const ControlPanel: React.FC<{}> = ({ }) => {
+  const id = useCurId()
   const curForm = useSelector((r: RootState) => r.editModel.form)
 
   const onSaveDraft = React.useCallback(() => {
     console.log("CUR FORM! ", curForm)
-    saveDraft(curForm).then(_ => {
+    saveDraft(id, curForm).then(_ => {
       console.log("FINISHED SAVING! ")
     })
-  }, [curForm])
+  }, [id, curForm])
 
   return (
     <div style={{ width: '100%', display: 'flex', justifyContent: 'center', alignItems: 'center', backgroundColor: 'lightgray', padding: 10 }}>
