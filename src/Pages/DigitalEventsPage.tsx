@@ -81,9 +81,9 @@ const AllSections: React.FC<{}> = ({ }) => {
 const ControlPanel: React.FC<{}> = ({ }) => {
   return (
     <div style={{ width: '100%', display: 'flex', justifyContent: 'center', alignItems: 'center', backgroundColor: 'lightgray', padding: 10 }}>
-      <button style={{ marginRight: 30 }}>Save Draft</button>
+      <button type="submit" className="bg-blue-500 text-white py-2 px-4" style={{ marginRight: 30 }}>Save Draft</button>
       <button style={{ marginRight: 30 }}>Preview</button>
-      <button>Publish</button>
+      <button className="bg-orange-500 text-white py-2 px-4">Publish</button>
     </div>
   )
 }
@@ -109,7 +109,7 @@ const EditPageTitle: React.FC<{}> = ({ }) => {
 
   return (
     <div style={{ width: '100%', display: 'flex', marginBottom: 30, alignItems: 'center' }}>
-      <h3 style={{ marginRight: 18 }}>Page Title</h3>
+      <h3 className="text-2xl font-bold" style={{ marginRight: 18 }}>Page Title</h3>
       <EdiText type="text" value={value} onSave={handleSave} />
     </div>
   )
@@ -150,7 +150,7 @@ const EditBanner: React.FC<{}> = ({ }) => {
 
   return (
     <div style={divStyleBase}>
-      <h3>Banner</h3>
+      <h3 className="text-2xl font-bold mb-10">Banner</h3>
       <div style={{ marginBottom: 10, display: 'flex' }}>
         <label style={{ display: 'flex', alignItems: 'center', marginRight: 10, fontWeight: 'bold' }}>
           Title:
@@ -239,11 +239,9 @@ const EditFeaturedStores: React.FC<{}> = ({ }) => {
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', marginTop: 30 }}>
-      <div style={{ display: 'flex' }}>
-        <h3>Featured Stores</h3>
-        <button style={{ marginLeft: 20 }} onClick={openModal}>
-          Add Store
-        </button>
+      <div style={{ display: 'flex', marginBottom: 20 }}>
+        <h3 className="text-2xl font-bold">Featured Stores</h3>
+        <OutlineButton title="Add Store" onClick={openModal} />
       </div>
 
 
@@ -269,8 +267,10 @@ const EditFeaturedStores: React.FC<{}> = ({ }) => {
         style={customStyles}
         contentLabel="Example Modal"
       >
-        <div style={{ width: '100%' }}>
-          <button onClick={closeModal}>close</button>
+        <div className="width-full">
+          <div className="width-full flex justify-end mb-20">
+            <button onClick={closeModal}>close</button>
+          </div>
           {mbStores ?
             (
               <div>
@@ -289,12 +289,14 @@ const EditFeaturedStores: React.FC<{}> = ({ }) => {
             :
             (<></>)
           }
-          <div>
+          <div className='w-full mt-20 border'>
             {selectedStore
               ?
               (
-
-                <button onClick={() => onAdd(selectedStore)}>
+                <button
+                  className="w-full rounded bg-blue-500 hover:bg-blue-300 text-white py-2 px-4"
+                  onClick={() => onAdd(selectedStore)}
+                >
                   Add
                 </button>
               )
@@ -533,5 +535,17 @@ const EditAdditionalStores: React.FC<{}> = ({ }) => {
         </div>
       </Modal>
     </div>
+  )
+}
+
+
+const OutlineButton: React.FC<{ title: string, onClick: () => void }> = ({ title, onClick }) => {
+  return (
+    <button
+      className="rounded border border-blue-500 bg-transparent hover:bg-blue-500 hover:text-white py-2 px-4" style={{ marginLeft: 20 }}
+      onClick={onClick}
+    >
+      {title}
+    </button>
   )
 }
