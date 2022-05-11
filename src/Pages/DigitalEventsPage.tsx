@@ -1,14 +1,12 @@
 import * as React from 'react'
+import { Root } from 'react-dom/client'
 import EdiText from 'react-editext'
 import Modal from 'react-modal'
 import { Provider, useDispatch, useSelector } from "react-redux"
 import { useLocation, useParams } from 'react-router-dom'
 import Select from "react-select"
-import { StylesProps } from 'react-select/dist/declarations/src/styles'
-import { UnaryExpression } from 'typescript'
-import { Style } from 'util'
 import { Backend } from '../Backend/Api'
-import { AJStore, Deal } from '../Models'
+import { AJStore, Deal, HeadlessDigitalEvent } from '../Models'
 import { AJStoreDnD } from './CreateDigitalEvents/ItemSorter'
 import { Dispatch, RootState, store } from './DigitalEventsPageVM'
 
@@ -66,7 +64,12 @@ export const DigitalEventsPage: React.FC<{}> = ({ }) => {
 
 const AllSections: React.FC<{}> = ({ }) => {
   const dispatch = useDispatch<Dispatch>()
-  const additionalStoresSection = useSelector((s: RootState) => s.editModel.form.additionalStores)
+  const additionalStoresSection = useSelector((s: RootState) => s.editModel.de.content.additionalStores)
+  const id = useCurId()
+
+  React.useEffect(() => {
+    dispatch.editModel.syncDigitalEvent(id)
+  }, [])
 
   return (
     <>
@@ -92,9 +95,9 @@ const AllSections: React.FC<{}> = ({ }) => {
           </div>
         )
       }
-      <SectionContainer>
+      {/* <SectionContainer>
         <EditFeaturedDeals />
-      </SectionContainer>
+      </SectionContainer> */}
     </>
   )
 }
@@ -104,7 +107,7 @@ const AllSections: React.FC<{}> = ({ }) => {
 
 const ControlPanel: React.FC<{}> = ({ }) => {
   const id = useCurId()
-  const curForm = useSelector((r: RootState) => r.editModel.form)
+  const curForm = useSelector((r: RootState) => r.editModel.de.content)
   const tkn = useBearerTkn()
 
   const onSaveDraft = React.useCallback(() => {
@@ -142,7 +145,7 @@ const Preview: React.FC<{}> = ({ }) => {
 
 const EditPageTitle: React.FC<{}> = ({ }) => {
   const dispatch = useDispatch<Dispatch>()
-  const inputPageTitle = useSelector((state: RootState) => state.editModel.form.pageTitle)
+  const inputPageTitle = useSelector((state: RootState) => state.editModel.de.content.pageTitle)
   const [value, _] = React.useState(inputPageTitle);
 
 
@@ -160,12 +163,18 @@ const EditPageTitle: React.FC<{}> = ({ }) => {
 }
 
 
-const EditBanner: React.FC<{}> = ({ }) => {
-  const banner = useSelector((state: RootState) => state.editModel.form.banner)
+const EditBanner: React.FC<{ mbInitialDE?: HeadlessDigitalEvent }> = ({ mbInitialDE }) => {
+  const banner = useSelector((state: RootState) => state.editModel.de.content.banner)
   const dispatch = useDispatch<Dispatch>()
-  const [savedTitle, _] = React.useState(banner.title)
-  const [savedCashbackStr, s] = React.useState(banner.cashBackString)
+  const [savedTitle, setSavedTitle] = React.useState(banner.title)
+  const [savedCashbackStr, setCachbackStr] = React.useState(banner.cashBackString)
   const [savedImageUrl, ssiurl] = React.useState(banner.backgroundImageUrl ?? "")
+
+  React.useEffect(() => {
+    setSavedTitle(banner.title)
+    setCachbackStr(banner.cashBackString)
+    ssiurl(banner.backgroundImageUrl ?? "")
+  }, [banner])
 
   const setBannerTitle = (v: string) => {
     // setSavedTitle(v)
@@ -250,7 +259,7 @@ const EditFeaturedStores: React.FC<{}> = ({ }) => {
   const [isShowingModal, setIsShowingModal] = React.useState(false)
   const [mbStores, setMbStores] = React.useState<null | Store[]>(null)
   const [selectedStore, setSelectedStore] = React.useState<null | string>()
-  const stores = useSelector((state: RootState) => state.editModel.form.featuredStores)
+  const stores = useSelector((state: RootState) => state.editModel.de.content.featuredStores)
   const dispatch = useDispatch<Dispatch>()
 
   React.useEffect(() => {
@@ -363,107 +372,107 @@ const StoreIcon: React.FC<{ ajStore: AJStore, onRemove: () => void }> = ({ ajSto
 )
 
 
-const EditFeaturedDeals: React.FC<{}> = ({ }) => {
-  const [isShowingModal, setIsShowingModal] = React.useState(false)
-  const [mbFetchedDeals, setFetchedDeals] = React.useState<null | Deal[]>(null)
-  const [selectedDeal, setSelectedDeal] = React.useState<null | number>()
-  const chosenDeals = useSelector((state: RootState) => state.editModel.form.featuredDeals)
-  const dispatch = useDispatch<Dispatch>()
+// const EditFeaturedDeals: React.FC<{}> = ({ }) => {
+//   const [isShowingModal, setIsShowingModal] = React.useState(false)
+//   const [mbFetchedDeals, setFetchedDeals] = React.useState<null | Deal[]>(null)
+//   const [selectedDeal, setSelectedDeal] = React.useState<null | number>()
+//   const chosenDeals = useSelector((state: RootState) => state.editModel.de.content.featuredDeals)
+//   const dispatch = useDispatch<Dispatch>()
 
-  React.useEffect(() => {
-    Backend.searchDeals("shoes").then(r => {
-      console.log("RESULT OF FETCHING DEALS! ", r)
-      setFetchedDeals(r)
-    })
-  }, [])
+//   React.useEffect(() => {
+//     Backend.searchDeals("shoes").then(r => {
+//       console.log("RESULT OF FETCHING DEALS! ", r)
+//       setFetchedDeals(r)
+//     })
+//   }, [])
 
-  function openModal() {
-    setIsShowingModal(true);
-  }
+//   function openModal() {
+//     setIsShowingModal(true);
+//   }
 
-  function closeModal() {
-    setIsShowingModal(false);
-  }
+//   function closeModal() {
+//     setIsShowingModal(false);
+//   }
 
-  const onAdd = React.useCallback((dealId: number) => {
-    console.log("MB DEALS! ", mbFetchedDeals)
-    if (mbFetchedDeals) {
-      const newDeal = mbFetchedDeals.find(s => s.id == dealId)!
-      console.log("NEW STORE! ", newDeal)
-      dispatch.editModel.addFeaturedDeal(newDeal)
-      setIsShowingModal(false)
-    }
-  }, [mbFetchedDeals])
+//   const onAdd = React.useCallback((dealId: number) => {
+//     console.log("MB DEALS! ", mbFetchedDeals)
+//     if (mbFetchedDeals) {
+//       const newDeal = mbFetchedDeals.find(s => s.id == dealId)!
+//       console.log("NEW STORE! ", newDeal)
+//       dispatch.editModel.addFeaturedDeal(newDeal)
+//       setIsShowingModal(false)
+//     }
+//   }, [mbFetchedDeals])
 
-  return (
-    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', marginTop: 30 }}>
-      <h3>Featured Deals</h3>
+//   return (
+//     <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', marginTop: 30 }}>
+//       <h3>Featured Deals</h3>
 
-      <div style={{ display: 'flex', flexDirection: 'row' }}>
-        {chosenDeals.map(d => (
-          <DealThumb deal={d} onRemove={() => { }} />
-        ))}
+//       <div style={{ display: 'flex', flexDirection: 'row' }}>
+//         {chosenDeals.map(d => (
+//           <DealThumb deal={d} onRemove={() => { }} />
+//         ))}
 
-        <div style={{ width: 100, height: 200, border: '1px dotted black', display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center' }} onClick={openModal}>
-          Add Deal
-          <p>+</p>
-        </div>
+//         <div style={{ width: 100, height: 200, border: '1px dotted black', display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center' }} onClick={openModal}>
+//           Add Deal
+//           <p>+</p>
+//         </div>
 
-      </div>
+//       </div>
 
-      <Modal
-        isOpen={isShowingModal}
-        onAfterOpen={() => { }}
-        onRequestClose={closeModal}
-        style={customStyles}
-        contentLabel="Example Modal"
-      >
-        <div style={{ width: '100%' }}>
-          <button onClick={closeModal}>close</button>
-          {mbFetchedDeals ?
-            (
-              <div>
-                <Select
-                  defaultValue={{ value: mbFetchedDeals[0].id, label: mbFetchedDeals[0].title }}
-                  onChange={p => { setSelectedDeal(p?.value) }}
-                  formatOptionLabel={({ value, label }) => (
-                    <div style={{ display: "flex", flexDirection: 'column' }}>
-                      <div>{label}</div>
-                    </div>
-                  )}
-                  options={mbFetchedDeals.map(s => ({ value: s.id, label: s.title }))}
-                />
-              </div>
-            )
-            :
-            (<></>)
-          }
-          <div>
-            {selectedDeal
-              ?
-              (
+//       <Modal
+//         isOpen={isShowingModal}
+//         onAfterOpen={() => { }}
+//         onRequestClose={closeModal}
+//         style={customStyles}
+//         contentLabel="Example Modal"
+//       >
+//         <div style={{ width: '100%' }}>
+//           <button onClick={closeModal}>close</button>
+//           {mbFetchedDeals ?
+//             (
+//               <div>
+//                 <Select
+//                   defaultValue={{ value: mbFetchedDeals[0].id, label: mbFetchedDeals[0].title }}
+//                   onChange={p => { setSelectedDeal(p?.value) }}
+//                   formatOptionLabel={({ value, label }) => (
+//                     <div style={{ display: "flex", flexDirection: 'column' }}>
+//                       <div>{label}</div>
+//                     </div>
+//                   )}
+//                   options={mbFetchedDeals.map(s => ({ value: s.id, label: s.title }))}
+//                 />
+//               </div>
+//             )
+//             :
+//             (<></>)
+//           }
+//           <div>
+//             {selectedDeal
+//               ?
+//               (
 
-                <button onClick={() => onAdd(selectedDeal)}>
-                  Add
-                </button>
-              )
-              :
-              (<></>)
-            }
-          </div>
-        </div>
-      </Modal>
-    </div>
-  )
-}
+//                 <button onClick={() => onAdd(selectedDeal)}>
+//                   Add
+//                 </button>
+//               )
+//               :
+//               (<></>)
+//             }
+//           </div>
+//         </div>
+//       </Modal>
+//     </div>
+//   )
+// }
 
-const DealThumb: React.FC<{ deal: Deal, onRemove: () => void }> = ({ deal, onRemove }) => (
-  <div style={{ width: 100, height: 200, border: '1px solid black', marginRight: 20, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
-    {deal.title}
-    <img src={deal.store.image_url} style={{ width: 20, height: 20 }} />
-    <button onClick={onRemove}>X</button>
-  </div>
-)
+// const DealThumb: React.FC<{ deal: Deal, onRemove: () => void }> = ({ deal, onRemove }) => (
+//   <div style={{ width: 100, height: 200, border: '1px solid black', marginRight: 20, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
+//     {deal.title}
+//     <img src={deal.store.image_url} style={{ width: 20, height: 20 }} />
+//     <button onClick={onRemove}>X</button>
+//   </div>
+// )
 
 const SectionContainer: React.FC<React.PropsWithChildren<{ onRemove?: () => void }>> = ({ children, onRemove }) => {
   return (
@@ -489,7 +498,7 @@ const EditAdditionalStores: React.FC<{}> = ({ }) => {
   const [isShowingModal, setIsShowingModal] = React.useState(false)
   const [mbStores, setMbStores] = React.useState<null | Store[]>(null)
   const [selectedStore, setSelectedStore] = React.useState<null | string>()
-  const stores = useSelector((state: RootState) => state.editModel.form.additionalStores!.stores)
+  const stores = useSelector((state: RootState) => state.editModel.de.content.additionalStores!.stores)
   const dispatch = useDispatch<Dispatch>()
 
   React.useEffect(() => {

@@ -64,6 +64,13 @@ export type HeadlessDigitalEventContent = {
   banner: BannerContent
   sections: Section[]
   featuredStores: AJStore[]
-  featuredDeals: Deal[]
   additionalStores: null | { title: string, stores: AJStore[] }
+  // featuredDeals: Deal[]
+}
+
+export interface HeadlessDigitalEvent {
+  title: string
+  last_saved_at: string | null
+  last_published_at: string | null
+  content: HeadlessDigitalEventContent
 }
