@@ -15,7 +15,17 @@ async function publishDraft(tkn: string, id: string) {
 }
 
 
+async function saveDraft(tkn: string, id: string, content: Object) {
+  const body: BodyInit = JSON.stringify({ content })
+  const reqInit: RequestInit = { method: 'POST', body, headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${tkn}` } }
+  const url = `http://localhost:3000/headless_digital_events/${id}/save`
+  const r = await fetch(url, reqInit)
+  console.log("R! ", r.status)
+}
+
+
 export const Backend = {
   searchDeals,
-  publishDraft
+  publishDraft,
+  saveDraft
 }

@@ -99,13 +99,6 @@ const AllSections: React.FC<{}> = ({ }) => {
   )
 }
 
-async function saveDraft(tkn: string, id: string, content: Object) {
-  const body: BodyInit = JSON.stringify({ content })
-  const reqInit: RequestInit = { method: 'POST', body, headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${tkn}` } }
-  const url = `http://localhost:3000/headless_digital_events/${id}/save`
-  const r = await fetch(url, reqInit)
-  console.log("R! ", r.status)
-}
 
 
 
@@ -116,7 +109,7 @@ const ControlPanel: React.FC<{}> = ({ }) => {
 
   const onSaveDraft = React.useCallback(() => {
     console.log("CUR FORM! ", curForm)
-    saveDraft(tkn, id, curForm).then(_ => {
+    Backend.saveDraft(tkn, id, curForm).then(_ => {
       console.log("FINISHED SAVING! ")
     })
   }, [tkn, id, curForm])

@@ -5,74 +5,15 @@ import produce from 'immer'
 import { url } from 'inspector'
 import createCachedSelector from 're-reselect'
 import { Root } from 'react-dom/client'
-import { AJStore, Deal } from '../Models'
-
-type BannerContent = {
-  title: string
-  cashBackString: string
-  backgroundImageUrl: string | null
-}
-
+import { AJStore, Deal, HeadlessDigitalEventContent, Section } from '../Models'
 
 export type PageState = {
-  form: CreateDigitalEventFormInput
+  form: HeadlessDigitalEventContent
 
   isFetching: boolean
 }
 
-type Section =
-  KnownSection
-// | {_ tag: 'templated'} -- TODO: somday allow for flexible
-
-
-type KnownSectionTypes =
-  { _tag: 'FEATURED_DEALS', deals: Deal[] }
-  | KnownSections.FeaturedStores
-  | { _tag: 'ADDITIONAL_STORES', stores: AJStore[] }
-
-class KnownSection {
-  _tag: 'Known' = 'Known'
-  constructor(public section: KnownSectionTypes) { }
-
-  modifyIfFeaturedStore(f: (fs: KnownSections.FeaturedStores) => KnownSections.FeaturedStores) {
-    if (this.section instanceof KnownSections.FeaturedStores) {
-      const modifiedFeaturedSection = f(this.section)
-      this.section = modifiedFeaturedSection
-    }
-  }
-}
-namespace KnownSections {
-  type Tag = 'FEATURED_STORES' | 'ADDITIONAL_STORES'
-  export class FeaturedStores {
-    _tag: Tag = 'FEATURED_STORES'
-    constructor(public stores: AJStore[]) { }
-
-    withAddedStore(store: AJStore): FeaturedStores {
-      return new FeaturedStores([...this.stores.concat(store)])
-    }
-    withRemovedStore(urlSlug: string): FeaturedStores {
-      const mbIdx = this.stores.findIndex(store => store.url_slug = urlSlug)
-      const withRemovedStore = produce(this.stores, draft => {
-        const index = draft.findIndex(s => s.url_slug === urlSlug)
-        if (index !== -1) draft.splice(index, 1)
-      })
-      return new FeaturedStores(withRemovedStore)
-    }
-  }
-}
-
-
-
-export type CreateDigitalEventFormInput = {
-  pageTitle: string
-  banner: BannerContent
-  sections: Section[]
-  featuredStores: AJStore[]
-  featuredDeals: Deal[]
-  additionalStores: null | { title: string, stores: AJStore[] }
-}
-
-export const emptyFormState: CreateDigitalEventFormInput = {
+export const emptyFormState: HeadlessDigitalEventContent = {
   pageTitle: '',
   banner: { title: '', cashBackString: '', backgroundImageUrl: null },
   sections: [],
