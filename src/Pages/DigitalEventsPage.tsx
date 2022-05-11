@@ -146,18 +146,22 @@ const Preview: React.FC<{}> = ({ }) => {
 const EditPageTitle: React.FC<{}> = ({ }) => {
   const dispatch = useDispatch<Dispatch>()
   const inputPageTitle = useSelector((state: RootState) => state.editModel.de.content.pageTitle)
-  const [value, _] = React.useState(inputPageTitle);
+  const [value, setTitle] = React.useState(inputPageTitle);
 
+  React.useEffect(() => {
+    console.log("INPUT PAGE TITLE! ", inputPageTitle)
+    setTitle(inputPageTitle)
+  }, [inputPageTitle])
 
   const handleSave = (val: string) => {
     console.log('Edited Value -> ', val);
-    dispatch.editModel.setPageTitle(value)
-  };
+    dispatch.editModel.setPageTitle(val)
+  }
 
   return (
     <div style={{ width: '100%', display: 'flex', marginBottom: 30, alignItems: 'center' }}>
       <h3 className="text-2xl font-bold" style={{ marginRight: 18 }}>Page Title</h3>
-      <EdiText type="text" value={value} onSave={handleSave} />
+      <EdiText type="text" value={value} onSave={(val) => { handleSave(val) }} />
     </div>
   )
 }

@@ -48,7 +48,7 @@ export const editModel = createModel<RootModel>()({
       return { ...state, mbServerState: payload }
     },
     setPageTitle(state, payload: string) {
-      return { ...state, form: { ...state.de.content, pageTitle: payload } };
+      return { ...state, de: { ...state.de, content: { ...state.de.content, pageTitle: payload } } }
     },
 
     setBannerTitle(state, payload: string) {
@@ -65,26 +65,26 @@ export const editModel = createModel<RootModel>()({
     },
 
     addFeaturedStore(state, payload: AJStore) {
-      const withNewSections: Section[] = state.de.content.sections.map(s => {
-        s.modifyIfFeaturedStore(fss => fss.withAddedStore(payload))
+      // const withNewSections: Section[] = state.de.content.sections.map(s => {
+      //   s.modifyIfFeaturedStore(fss => fss.withAddedStore(payload))
 
-        return s
-      })
+      //   return s
+      // })
       const withNewForm = produce(state.de.content, draft => {
         draft.featuredStores.push(payload)
       })
-      return { ...state, de: { ...state.de, content: { ...withNewForm, sections: withNewSections } } }
+      return { ...state, de: { ...state.de, content: { ...withNewForm, sections: [] } } }
     },
     removeFeaturedStore(state, payload: string) {
-      const withRemovedStoreSections = state.de.content.sections.map(s => {
-        s.modifyIfFeaturedStore(ffs => ffs.withRemovedStore(payload))
-        return s
-      })
+      // const withRemovedStoreSections = state.de.content.sections.map(s => {
+      //   s.modifyIfFeaturedStore(ffs => ffs.withRemovedStore(payload))
+      //   return s
+      // })
       const withRemovedStore = produce(state.de.content.featuredStores, draft => {
         const index = draft.findIndex(s => s.url_slug === payload)
         if (index !== -1) draft.splice(index, 1)
       })
-      return { ...state, de: { ...state.de, featuredStores: withRemovedStore, sections: withRemovedStoreSections } }
+      return { ...state, de: { ...state.de, content: { ...state.de.content, featuredStores: withRemovedStore, sections: [] } } }
     },
     // addFeaturedDeal(state, payload: Deal) {
     //   const withNewForm = produce(state.de.content, draft => {
@@ -120,7 +120,7 @@ export const editModel = createModel<RootModel>()({
       const r = await fetch(`http://localhost:3000/headless_digital_events/${payload}`)
       console.log("RESULT OF GETTING DE! ", r.status)
       const j: HeadlessDigitalEvent = await r.json()
-      console.log("JJJ!!! ", JSON.stringify(j))
+      // console.log("JJJ!!! ", JSON.stringify(j))
       dispatch.editModel.setServerDigitalEvent(j)
       dispatch.editModel.setDigitalEvent(j)
     },

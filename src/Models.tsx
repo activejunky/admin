@@ -50,6 +50,7 @@ export namespace KnownSections {
     }
     withRemovedStore(urlSlug: string): FeaturedStores {
       const mbIdx = this.stores.findIndex(store => store.url_slug = urlSlug)
+      console.log("MB IDX! ", mbIdx)
       const withRemovedStore = produce(this.stores, draft => {
         const index = draft.findIndex(s => s.url_slug === urlSlug)
         if (index !== -1) draft.splice(index, 1)
