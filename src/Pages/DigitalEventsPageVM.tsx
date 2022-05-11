@@ -13,6 +13,7 @@ export type PageState = {
   mbServerState: HeadlessDigitalEvent | null
 
   isFetching: boolean
+  showSuccess: boolean
 }
 
 export const emptyFormState: HeadlessDigitalEventContent = {
@@ -34,7 +35,8 @@ const emptyDE_State: HeadlessDigitalEvent = {
 const emptyPageState: PageState = {
   de: emptyDE_State,
   mbServerState: null,
-  isFetching: false
+  isFetching: false,
+  showSuccess: false
 }
 
 export const editModel = createModel<RootModel>()({
@@ -46,6 +48,9 @@ export const editModel = createModel<RootModel>()({
     },
     setServerDigitalEvent(state, payload: HeadlessDigitalEvent) {
       return { ...state, mbServerState: payload }
+    },
+    setShowSuccess(state, payload: boolean) {
+      return { ...state, showSuccess: payload }
     },
     setPageTitle(state, payload: string) {
       return { ...state, de: { ...state.de, content: { ...state.de.content, pageTitle: payload } } }
@@ -126,6 +131,11 @@ export const editModel = createModel<RootModel>()({
       dispatch.editModel.setServerDigitalEvent(j)
       dispatch.editModel.setDigitalEvent(j)
     },
+    async finishShowSuccess() {
+      setTimeout(() => {
+        dispatch.editModel.setShowSuccess(false)
+      }, 1000)
+    }
   }),
 });
 export interface RootModel extends Models<RootModel> {

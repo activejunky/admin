@@ -9,6 +9,8 @@ import { Backend } from '../Backend/Api'
 import { AJStore, Deal, HeadlessDigitalEvent } from '../Models'
 import { AJStoreDnD } from './CreateDigitalEvents/ItemSorter'
 import { Dispatch, RootState, store } from './DigitalEventsPageVM'
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 const customStyles = {
   content: {
@@ -66,6 +68,7 @@ const AllSections: React.FC<{}> = ({ }) => {
   const dispatch = useDispatch<Dispatch>()
   const additionalStoresSection = useSelector((s: RootState) => s.editModel.de.content.additionalStores)
   const id = useCurId()
+  const showSuccess = useSelector((s: RootState) => s.editModel.showSuccess)
 
   React.useEffect(() => {
     dispatch.editModel.syncDigitalEvent(id)
@@ -73,6 +76,18 @@ const AllSections: React.FC<{}> = ({ }) => {
 
   return (
     <>
+      <ToastContainer
+        position="top-center"
+        autoClose={1000}
+        hideProgressBar={false}
+        newestOnTop={false}
+        closeOnClick
+        rtl={false}
+        pauseOnFocusLoss
+        draggable
+        pauseOnHover
+        theme='colored'
+      />
       <SectionContainer>
         <EditBanner />
       </SectionContainer>
@@ -109,11 +124,12 @@ const ControlPanel: React.FC<{}> = ({ }) => {
   const id = useCurId()
   const curForm = useSelector((r: RootState) => r.editModel.de.content)
   const tkn = useBearerTkn()
+  const dispatch = useDispatch<Dispatch>()
 
   const onSaveDraft = React.useCallback(() => {
     console.log("CUR FORM! ", curForm)
     Backend.saveDraft(tkn, id, curForm).then(_ => {
-      console.log("FINISHED SAVING! ")
+      toast.success("Saved!")
     })
   }, [tkn, id, curForm])
 
@@ -121,12 +137,14 @@ const ControlPanel: React.FC<{}> = ({ }) => {
     console.log("CUR FORM! ", curForm)
     Backend.publishDraft(tkn, id).then(_ => {
       console.log("FINISHED SAVING! ")
+      toast.success("Published!")
     })
   }, [tkn, id])
 
   return (
     <div style={{ width: '100%', display: 'flex', justifyContent: 'center', alignItems: 'center', backgroundColor: 'lightgray', padding: 10 }}>
       <button className="bg-blue-500 text-white py-2 px-4 mr-30" onClick={() => { onSaveDraft() }}>
+
         Save Draft
       </button>
       <button style={{ marginRight: 30 }}>Preview</button>
