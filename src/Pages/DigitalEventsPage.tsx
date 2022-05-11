@@ -2,7 +2,7 @@ import * as React from 'react'
 import EdiText from 'react-editext'
 import Modal from 'react-modal'
 import { Provider, useDispatch, useSelector } from "react-redux"
-import { useParams } from 'react-router-dom'
+import { useLocation, useParams } from 'react-router-dom'
 import Select from "react-select"
 import { StylesProps } from 'react-select/dist/declarations/src/styles'
 import { UnaryExpression } from 'typescript'
@@ -31,6 +31,17 @@ const CurIdContext = React.createContext<undefined | string>(undefined)
 function useCurId() {
   const cid = React.useContext(CurIdContext)
   return cid!
+}
+
+function useQuery() {
+  const { search } = useLocation();
+
+  return React.useMemo(() => new URLSearchParams(search), [search]);
+}
+function useBearerTkn() {
+  const query = useQuery()
+  const tkn = query.get('tkn')
+  return tkn!
 }
 
 export const DigitalEventsPage: React.FC<{}> = ({ }) => {
@@ -88,24 +99,34 @@ const AllSections: React.FC<{}> = ({ }) => {
   )
 }
 
-async function saveDraft(id: string, content: Object) {
+async function saveDraft(tkn: string, id: string, content: Object) {
   const body: BodyInit = JSON.stringify({ content })
-  const reqInit: RequestInit = { method: 'POST', body, headers: { 'Content-Type': 'application/json' } }
+  const reqInit: RequestInit = { method: 'POST', body, headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${tkn}` } }
   const url = `http://localhost:3000/headless_digital_events/${id}/save`
   const r = await fetch(url, reqInit)
   console.log("R! ", r.status)
 }
 
+
+
 const ControlPanel: React.FC<{}> = ({ }) => {
   const id = useCurId()
   const curForm = useSelector((r: RootState) => r.editModel.form)
+  const tkn = useBearerTkn()
 
   const onSaveDraft = React.useCallback(() => {
     console.log("CUR FORM! ", curForm)
-    saveDraft(id, curForm).then(_ => {
+    saveDraft(tkn, id, curForm).then(_ => {
       console.log("FINISHED SAVING! ")
     })
-  }, [id, curForm])
+  }, [tkn, id, curForm])
+
+  const onPublishDraft = React.useCallback(() => {
+    console.log("CUR FORM! ", curForm)
+    Backend.publishDraft(tkn, id).then(_ => {
+      console.log("FINISHED SAVING! ")
+    })
+  }, [tkn, id])
 
   return (
     <div style={{ width: '100%', display: 'flex', justifyContent: 'center', alignItems: 'center', backgroundColor: 'lightgray', padding: 10 }}>
@@ -113,7 +134,7 @@ const ControlPanel: React.FC<{}> = ({ }) => {
         Save Draft
       </button>
       <button style={{ marginRight: 30 }}>Preview</button>
-      <button className="bg-orange-500 text-white py-2 px-4">Publish</button>
+      <button className="bg-orange-500 text-white py-2 px-4" onClick={() => { onPublishDraft() }}>Publish</button>
     </div>
   )
 }
