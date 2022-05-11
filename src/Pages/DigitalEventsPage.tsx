@@ -296,6 +296,13 @@ const EditFeaturedStores: React.FC<{}> = ({ }) => {
 
   function openModal() {
     setIsShowingModal(true);
+    fetchHomePage().then(hp => {
+      console.log("MB STORES! ", hp.store_carousels)
+      setMbStores(hp.store_carousels.flatMap(sc => sc.stores))
+    })
+      .catch(e => {
+        console.error("FAILED! ", e)
+      })
   }
 
   function closeModal() {
