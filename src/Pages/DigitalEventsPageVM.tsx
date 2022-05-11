@@ -110,7 +110,9 @@ export const editModel = createModel<RootModel>()({
     addAdditionalStore(state, payload: AJStore) {
       const curSection = state.de.content.additionalStores
       if (curSection) {
-        return { ...state, form: { ...state.de.content, additionalStores: { title: "Additional Stores", stores: [...curSection.stores, payload] } } }
+        const content: HeadlessDigitalEventContent = { ...state.de.content, additionalStores: { title: "Additional Stores", stores: [...curSection.stores, payload] } }
+        const de: HeadlessDigitalEvent = { ...state.de, content }
+        return { ...state, de }
       }
     }
   },

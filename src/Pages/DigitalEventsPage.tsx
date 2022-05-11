@@ -538,9 +538,15 @@ const EditAdditionalStores: React.FC<{}> = ({ }) => {
       <h3>Additional Stores</h3>
 
       <div style={{ display: 'flex', flexDirection: 'row' }}>
-        {stores.map(s => (
+        <AJStoreDnD
+          stores={stores}
+          onRemove={(slug) => {
+            dispatch.editModel.removeFeaturedStore(slug)
+          }}
+        />
+        {/* {stores.map(s => (
           <StoreIcon ajStore={s} onRemove={() => { dispatch.editModel.removeFeaturedStore(s.url_slug) }} />
-        ))}
+        ))} */}
 
         <div style={{ width: 100, height: 200, border: '1px dotted black', display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center' }} onClick={openModal}>
           Add Store
