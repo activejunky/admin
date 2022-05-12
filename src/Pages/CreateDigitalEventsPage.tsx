@@ -345,8 +345,15 @@ const EditFeaturedStores: React.FC<{}> = ({ }) => {
                       <div>{label}</div>
                     </div>
                   )}
-                  loadOptions={v => loadStoreOptions({ searchTerms: v })}
-                  defaultOptions={mbStores.map(s => ({ value: s.url_slug, label: s.name }))}
+                  loadOptions={v => {
+                    async function getAndSet() {
+                      const stores = await Backend.getStores({ searchTerms: v })
+                      setMbStores(stores)
+                      return stores.map(s => ({ value: s.url_slug, label: s.name }))
+                    }
+                    return getAndSet()
+                  }}
+                // defaultOptions={mbStores.map(s => ({ value: s.url_slug, label: s.name }))}
                 />
               </div>
             )

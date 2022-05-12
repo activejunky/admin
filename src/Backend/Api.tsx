@@ -1,7 +1,7 @@
 import { AJStore, Deal, HeadlessDigitalEvent } from "../Models"
 
-// const baseUrl = 'https://activejunky-stage.herokuapp.com'
-const baseUrl = 'http://localhost:3000'
+const baseUrl = 'https://activejunky-stage.herokuapp.com'
+// const baseUrl = 'http://localhost:3000'
 
 function endpt(ep: string): string {
   return `${baseUrl}/${ep}`
@@ -80,8 +80,9 @@ async function allDigitalEvents() {
 }
 
 async function digitalEvent(id: string) {
-  const r = await fetch(hdept(`${id}`))
+  const r = await fetch(hdept(`${id}.json`))
   const j: HeadlessDigitalEvent = await r.json()
+  console.log("RESULT OF GETTING DIGITAL EVENT! ", r.status, JSON.stringify(j))
   return j
 }
 
