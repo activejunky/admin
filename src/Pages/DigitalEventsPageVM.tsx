@@ -7,6 +7,8 @@ import createCachedSelector from 're-reselect'
 import { Root } from 'react-dom/client'
 import { empty } from 'rxjs'
 import { AJStore, Deal, HeadlessDigitalEvent, HeadlessDigitalEventContent, Section } from '../Models'
+import { pipe } from 'fp-ts/lib/function'
+import { Lens, LensFromPath } from 'monocle-ts'
 
 export type PageState = {
   de: HeadlessDigitalEvent
@@ -15,6 +17,11 @@ export type PageState = {
   isFetching: boolean
   showSuccess: boolean
 }
+
+const deL = Lens.fromProp<PageState>()('de')
+const contentL = deL.compose(Lens.fromProp<HeadlessDigitalEvent>()('content'))
+const bannerL = contentL.compose(Lens.fromProp<HeadlessDigitalEventContent>()('banner'))
+
 
 export const emptyFormState: HeadlessDigitalEventContent = {
   pageTitle: '',
@@ -53,20 +60,19 @@ export const editModel = createModel<RootModel>()({
       return { ...state, showSuccess: payload }
     },
     setPageTitle(state, payload: string) {
-      return { ...state, de: { ...state.de, content: { ...state.de.content, pageTitle: payload } } }
+      const pageTitleL = Lens.fromPath<PageState>()(['de', 'content', 'pageTitle'])
+      return pipe(state, pageTitleL.modify(_ => payload))
     },
 
     setBannerTitle(state, payload: string) {
-      const withNewTitle = { ...state.de.content, banner: { ...state.de.content.banner, title: payload } }
-      return { ...state, de: { ...state.de, content: withNewTitle } }
+      const bannerTitleL = Lens.fromPath<PageState>()(['de', 'content', 'banner', 'title'])
+      return pipe(state, bannerTitleL.modify(_ => payload))
     },
     setBannerCachback(state, payload: string) {
-      const withNewForm = { ...state.de.content, banner: { ...state.de.content.banner, cashBackString: payload } }
-      return { ...state, de: { ...state.de, content: withNewForm } }
+      return pipe(state, bannerL.modify(b => ({ ...b, cashBackString: payload })))
     },
     setBannerImageUrl(state, payload: string) {
-      const withNewForm = { ...state.de.content, banner: { ...state.de.content.banner, backgroundImageUrl: payload } }
-      return { ...state, de: { ...state.de, content: withNewForm } }
+      return pipe(state, bannerL.modify(b => ({ ...b, backgroundImageUrl: payload })))
     },
 
     addFeaturedStore(state, payload: AJStore) {
