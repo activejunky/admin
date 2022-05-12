@@ -264,24 +264,20 @@ const EditFeaturedStores: React.FC<{}> = ({ }) => {
   const dispatch = useDispatch<Dispatch>()
 
   React.useEffect(() => {
-    Backend.fetchHomePage().then(hp => {
-      console.log("MB STORES! ", hp.store_carousels)
-      setMbStores(hp.store_carousels.flatMap(sc => sc.stores))
+    Backend.getStores().then(s => {
+      setMbStores(s)
+    }).catch(e => {
+      console.log("FAILED TO GET STORES! ", e)
     })
-      .catch(e => {
-        console.error("FAILED! ", e)
-      })
   }, [])
 
   function openModal() {
     setIsShowingModal(true);
-    Backend.fetchHomePage().then(hp => {
-      console.log("MB STORES! ", hp.store_carousels)
-      setMbStores(hp.store_carousels.flatMap(sc => sc.stores))
+    Backend.getStores().then(s => {
+      setMbStores(s)
+    }).catch(e => {
+      console.log("FAILED TO GET STORES! ", e)
     })
-      .catch(e => {
-        console.error("FAILED! ", e)
-      })
   }
 
   function closeModal() {

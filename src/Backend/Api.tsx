@@ -40,6 +40,13 @@ async function fetchHomePage(): Promise<HomepageData> {
   return j
 }
 
+async function getStores(): Promise<AJStore[]> {
+  const url = endpt(`/api/search/stores.json`)
+  const r = await fetch(url)
+  const j: { results: AJStore[] } = await r.json()
+  return j.results
+}
+
 async function publishDraft(tkn: string, id: string) {
   const reqInit: RequestInit = { method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${tkn}` } }
   const url = hdept(`/${id}/publish`)
@@ -75,5 +82,6 @@ export const Backend = {
   saveDraft,
   allDigitalEvents,
   digitalEvent,
-  fetchHomePage
+  fetchHomePage,
+  getStores
 }
