@@ -32,7 +32,7 @@ async function fetchHomePage(): Promise<HomepageData> {
     "Access-Control-Max-Age": "-1",
   });
 
-  const url = "/api/homepages/content.json"
+  const url = `${baseUrl}/api/homepages/content.json`
   const r = await fetch(url, { headers })
   console.log("R! ", r)
   const j: HomepageData = await r.json()
