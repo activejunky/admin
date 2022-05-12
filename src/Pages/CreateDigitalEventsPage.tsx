@@ -11,6 +11,7 @@ import { AJStoreDnD } from './CreateDigitalEvents/ItemSorter'
 import { Dispatch, RootState, store } from './CreateDigitalEventsPageVM'
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+import Async, { useAsync } from 'react-select/async';
 
 const customStyles = {
   content: {
@@ -255,6 +256,10 @@ const EditBanner: React.FC<{ mbInitialDE?: HeadlessDigitalEvent }> = ({ mbInitia
 }
 
 
+async function loadStoreOptions(p: { searchTerms: string }) {
+  const stores = await Backend.getStores(p)
+  return stores.map(s => ({ label: s.name, value: s.url_slug }))
+}
 
 const EditFeaturedStores: React.FC<{}> = ({ }) => {
   const [isShowingModal, setIsShowingModal] = React.useState(false)
@@ -264,7 +269,7 @@ const EditFeaturedStores: React.FC<{}> = ({ }) => {
   const dispatch = useDispatch<Dispatch>()
 
   React.useEffect(() => {
-    Backend.getStores().then(s => {
+    Backend.getStores({ searchTerms: '' }).then(s => {
       setMbStores(s)
     }).catch(e => {
       console.log("FAILED TO GET STORES! ", e)
@@ -273,7 +278,7 @@ const EditFeaturedStores: React.FC<{}> = ({ }) => {
 
   function openModal() {
     setIsShowingModal(true);
-    Backend.getStores().then(s => {
+    Backend.getStores({ searchTerms: '' }).then(s => {
       setMbStores(s)
     }).catch(e => {
       console.log("FAILED TO GET STORES! ", e)
@@ -293,6 +298,7 @@ const EditFeaturedStores: React.FC<{}> = ({ }) => {
       setIsShowingModal(false)
     }
   }, [mbStores])
+
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', marginTop: 30 }}>
@@ -331,7 +337,7 @@ const EditFeaturedStores: React.FC<{}> = ({ }) => {
           {mbStores ?
             (
               <div>
-                <Select
+                <Async
                   defaultValue={{ value: mbStores[0].url_slug, label: mbStores[0].name }}
                   onChange={p => { setSelectedStore(p?.value) }}
                   formatOptionLabel={({ value, label }) => (
@@ -339,7 +345,8 @@ const EditFeaturedStores: React.FC<{}> = ({ }) => {
                       <div>{label}</div>
                     </div>
                   )}
-                  options={mbStores.map(s => ({ value: s.url_slug, label: s.name }))}
+                  loadOptions={v => loadStoreOptions({ searchTerms: v })}
+                  defaultOptions={mbStores.map(s => ({ value: s.url_slug, label: s.name }))}
                 />
               </div>
             )

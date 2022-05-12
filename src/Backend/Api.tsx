@@ -40,8 +40,8 @@ async function fetchHomePage(): Promise<HomepageData> {
   return j
 }
 
-async function getStores(): Promise<AJStore[]> {
-  const url = endpt(`/api/search/stores.json`)
+async function getStores(p: { searchTerms: string }): Promise<AJStore[]> {
+  const url = endpt(`/api/search/stores.json?search_terms=${p.searchTerms}`)
   const r = await fetch(url)
   const j: { results: AJStore[] } = await r.json()
   return j.results
@@ -56,8 +56,16 @@ async function publishDraft(tkn: string, id: string) {
 
 
 async function saveDraft(tkn: string, id: string, content: Object) {
+  const headers = new Headers({
+    "Content-Type": "application/json",
+    'Authorization': `Bearer ${tkn}`,
+    "Access-Control-Allow-Origin": "*",
+    "Access-Control-Allow-Headers": "*",
+    "Access-Control-Allow-Methods": "*",
+    "Access-Control-Max-Age": "-1",
+  });
   const body: BodyInit = JSON.stringify({ content })
-  const reqInit: RequestInit = { method: 'POST', body, headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${tkn}` } }
+  const reqInit: RequestInit = { method: 'POST', body, headers }
   const url = hdept(`/${id}/save`)
   const r = await fetch(url, reqInit)
   console.log("R! ", r.status)
