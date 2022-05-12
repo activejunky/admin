@@ -2,13 +2,15 @@ import React, { FormEvent } from 'react';
 import logo from './logo.svg';
 import './App.css';
 import { Routes, Route, Link } from "react-router-dom";
-import { DigitalEventsPage } from './Pages/DigitalEventsPage';
+import { DigitalEventsPage } from './Pages/CreateDigitalEventsPage';
+import { AllDigitalEventsPage } from './Pages/AllDigitalEventsPage';
 
 function App() {
   return (
     <div className="App">
       <Routes>
         <Route path="/" element={<Login />} />
+        <Route path="/cms" element={<AllDigitalEventsPage />} />
         <Route path="/cms/:id" element={<DigitalEventsPage />} />
       </Routes>
     </div>

@@ -70,6 +70,7 @@ export type HeadlessDigitalEventContent = {
 }
 
 export interface HeadlessDigitalEvent {
+  id: string
   title: string
   last_saved_at: string | null
   last_published_at: string | null

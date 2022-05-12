@@ -8,7 +8,7 @@ import Select from "react-select"
 import { Backend } from '../Backend/Api'
 import { AJStore, Deal, HeadlessDigitalEvent } from '../Models'
 import { AJStoreDnD } from './CreateDigitalEvents/ItemSorter'
-import { Dispatch, RootState, store } from './DigitalEventsPageVM'
+import { Dispatch, RootState, store } from './CreateDigitalEventsPageVM'
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 

@@ -1,4 +1,16 @@
-import { Deal } from "../Models"
+import { Deal, HeadlessDigitalEvent } from "../Models"
+
+const baseUrl = 'http://localhost:3000'
+
+function endpt(ep: string): string {
+  return `${baseUrl}/${ep}`
+}
+
+const HDE = 'headless_digital_events'
+
+function hdept(ep: string): string {
+  return endpt(`${HDE}/${ep}`)
+}
 
 async function searchDeals(term: string): Promise<Deal[]> {
   const url = `/api/search/deals.json?search_terms=${term}`
@@ -23,9 +35,17 @@ async function saveDraft(tkn: string, id: string, content: Object) {
   console.log("R! ", r.status)
 }
 
+async function allDigitalEvents() {
+  const r = await fetch(endpt(`${HDE}.json`))
+  const j: HeadlessDigitalEvent[] = await r.json()
+  console.log("ADE J! ", JSON.stringify(j))
+  return j
+}
+
 
 export const Backend = {
   searchDeals,
   publishDraft,
-  saveDraft
+  saveDraft,
+  allDigitalEvents
 }

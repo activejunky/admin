@@ -33,6 +33,7 @@ export const emptyFormState: HeadlessDigitalEventContent = {
 }
 
 const emptyDE_State: HeadlessDigitalEvent = {
+  id: '',
   title: '',
   last_published_at: null,
   last_saved_at: null,
