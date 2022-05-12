@@ -33,7 +33,7 @@ export const AllDigitalEventsPage: React.FC<{}> = ({ }) => {
 const AllEvents: React.FC<{ events: HeadlessDigitalEvent[] }> = ({ events }) => {
   return (
     <ul>
-      {events.map(hde => <EventRow hde={hde} />)}
+      {events.map(hde => <EventRow key={hde.id} hde={hde} />)}
     </ul>
   )
 }

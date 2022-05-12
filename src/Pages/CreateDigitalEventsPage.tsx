@@ -254,38 +254,17 @@ const EditBanner: React.FC<{ mbInitialDE?: HeadlessDigitalEvent }> = ({ mbInitia
   )
 }
 
-type Store = { id: number, url_slug: string, name: string, image_url: string }
 
-type HomepageData = {
-  store_carousels: { stores: Store[] }[]
-}
-
-async function fetchHomePage(): Promise<HomepageData> {
-  const headers = new Headers({
-    "Content-Type": "application/json",
-    "Access-Control-Allow-Origin": "*",
-    "Access-Control-Allow-Headers": "*",
-    "Access-Control-Allow-Methods": "*",
-    "Access-Control-Max-Age": "-1",
-  });
-
-  const url = "/api/homepages/content.json"
-  const r = await fetch(url, { headers })
-  console.log("R! ", r)
-  const j: HomepageData = await r.json()
-  console.log("J!", j)
-  return j
-}
 
 const EditFeaturedStores: React.FC<{}> = ({ }) => {
   const [isShowingModal, setIsShowingModal] = React.useState(false)
-  const [mbStores, setMbStores] = React.useState<null | Store[]>(null)
+  const [mbStores, setMbStores] = React.useState<null | AJStore[]>(null)
   const [selectedStore, setSelectedStore] = React.useState<null | string>()
   const stores = useSelector((state: RootState) => state.editModel.de.content.featuredStores)
   const dispatch = useDispatch<Dispatch>()
 
   React.useEffect(() => {
-    fetchHomePage().then(hp => {
+    Backend.fetchHomePage().then(hp => {
       console.log("MB STORES! ", hp.store_carousels)
       setMbStores(hp.store_carousels.flatMap(sc => sc.stores))
     })
@@ -296,7 +275,7 @@ const EditFeaturedStores: React.FC<{}> = ({ }) => {
 
   function openModal() {
     setIsShowingModal(true);
-    fetchHomePage().then(hp => {
+    Backend.fetchHomePage().then(hp => {
       console.log("MB STORES! ", hp.store_carousels)
       setMbStores(hp.store_carousels.flatMap(sc => sc.stores))
     })
@@ -525,13 +504,13 @@ const SectionContainer: React.FC<React.PropsWithChildren<{ onRemove?: () => void
 
 const EditAdditionalStores: React.FC<{}> = ({ }) => {
   const [isShowingModal, setIsShowingModal] = React.useState(false)
-  const [mbStores, setMbStores] = React.useState<null | Store[]>(null)
+  const [mbStores, setMbStores] = React.useState<null | AJStore[]>(null)
   const [selectedStore, setSelectedStore] = React.useState<null | string>()
   const stores = useSelector((state: RootState) => state.editModel.de.content.additionalStores!.stores)
   const dispatch = useDispatch<Dispatch>()
 
   React.useEffect(() => {
-    fetchHomePage().then(hp => {
+    Backend.fetchHomePage().then(hp => {
       console.log("MB STORES! ", hp.store_carousels)
       setMbStores(hp.store_carousels.flatMap(sc => sc.stores))
     })
@@ -560,7 +539,10 @@ const EditAdditionalStores: React.FC<{}> = ({ }) => {
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', marginTop: 30 }}>
-      <h3>Additional Stores</h3>
+      <div style={{ display: 'flex', marginBottom: 20 }}>
+        <h3 className="text-2xl font-bold">Additional Stores</h3>
+        <OutlineButton title="Add Store" onClick={openModal} />
+      </div>
 
       <div style={{ display: 'flex', flexDirection: 'row' }}>
         <AJStoreDnD
@@ -572,12 +554,6 @@ const EditAdditionalStores: React.FC<{}> = ({ }) => {
         {/* {stores.map(s => (
           <StoreIcon ajStore={s} onRemove={() => { dispatch.editModel.removeFeaturedStore(s.url_slug) }} />
         ))} */}
-
-        <div style={{ width: 100, height: 200, border: '1px dotted black', display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center' }} onClick={openModal}>
-          Add Store
-          <p>+</p>
-        </div>
-
       </div>
 
       <Modal

@@ -9,6 +9,7 @@ import { empty } from 'rxjs'
 import { AJStore, Deal, HeadlessDigitalEvent, HeadlessDigitalEventContent, Section } from '../Models'
 import { pipe } from 'fp-ts/lib/function'
 import { Lens, LensFromPath } from 'monocle-ts'
+import { Backend } from '../Backend/Api'
 
 export type PageState = {
   de: HeadlessDigitalEvent
@@ -130,13 +131,10 @@ export const editModel = createModel<RootModel>()({
   },
   effects: (dispatch) => ({
     async syncDigitalEvent(payload: string, rootState) {
-      console.log("SYNCING! ", payload)
-      const r = await fetch(`http://localhost:3000/headless_digital_events/${payload}`)
-      console.log("RESULT OF GETTING DE! ", r.status)
-      const j: HeadlessDigitalEvent = await r.json()
+      const hde = await Backend.digitalEvent(payload)
       // console.log("JJJ!!! ", JSON.stringify(j))
-      dispatch.editModel.setServerDigitalEvent(j)
-      dispatch.editModel.setDigitalEvent(j)
+      dispatch.editModel.setServerDigitalEvent(hde)
+      dispatch.editModel.setDigitalEvent(hde)
     },
     async finishShowSuccess() {
       setTimeout(() => {
