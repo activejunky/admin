@@ -1,6 +1,7 @@
 import { AJStore, Deal, HeadlessDigitalEvent } from "../Models"
 
-const baseUrl = 'https://activejunky-stage.herokuapp.com'
+// const baseUrl = 'https://activejunky-stage.herokuapp.com'
+const baseUrl = 'http://localhost:3000'
 
 function endpt(ep: string): string {
   return `${baseUrl}/${ep}`
@@ -49,7 +50,7 @@ async function getStores(p: { searchTerms: string }): Promise<AJStore[]> {
 
 async function publishDraft(tkn: string, id: string) {
   const reqInit: RequestInit = { method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${tkn}` } }
-  const url = hdept(`/${id}/publish`)
+  const url = hdept(`${id}/publish`)
   const r = await fetch(url, reqInit)
   console.log("R! ", r.status)
 }
@@ -66,7 +67,7 @@ async function saveDraft(tkn: string, id: string, content: Object) {
   });
   const body: BodyInit = JSON.stringify({ content })
   const reqInit: RequestInit = { method: 'POST', body, headers }
-  const url = hdept(`/${id}/save`)
+  const url = hdept(`${id}/save`)
   const r = await fetch(url, reqInit)
   console.log("R! ", r.status)
 }
