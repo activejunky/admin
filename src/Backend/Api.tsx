@@ -1,7 +1,9 @@
 import { AJStore, Deal, HeadlessDigitalEvent, HeadlessDigitalEventResponseObj } from "../Models"
 
 // const baseUrl = 'https://activejunky-stage.herokuapp.com'
-const baseUrl = 'http://localhost:3000'
+export const baseUrl = 'http://localhost:3000'
+
+export const s3BaseUrl = `https://temp-cms-stage-assets.s3.amazonaws.com`
 
 function endpt(ep: string): string {
   return `${baseUrl}/${ep}`

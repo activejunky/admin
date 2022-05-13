@@ -5,7 +5,7 @@ import Modal from 'react-modal'
 import { Provider, useDispatch, useSelector } from "react-redux"
 import { useLocation, useParams } from 'react-router-dom'
 import Select from "react-select"
-import { Backend } from '../Backend/Api'
+import { Backend, s3BaseUrl } from '../Backend/Api'
 import { AJStore, Deal, HeadlessDigitalEvent } from '../Models'
 import { AJStoreDnD } from './CreateDigitalEvents/ItemSorter'
 import { Dispatch, RootState, store } from './CreateDigitalEventsPageVM'
@@ -230,6 +230,8 @@ const EditBanner: React.FC<{ mbInitialDE?: HeadlessDigitalEvent }> = ({ mbInitia
     if (files) {
       Backend.uploadImage(files[0], curId).then(r => {
         console.log("UPLOADED FILE! ")
+        const s3Url = `${s3BaseUrl}/${curId}`
+        dispatch.editModel.setBannerImageUrl(s3Url)
       })
     }
   }
