@@ -1,7 +1,7 @@
-import { AJStore, Deal, HeadlessDigitalEvent } from "../Models"
+import { AJStore, Deal, HeadlessDigitalEvent, HeadlessDigitalEventResponseObj } from "../Models"
 
-const baseUrl = 'https://activejunky-stage.herokuapp.com'
-// const baseUrl = 'http://localhost:3000'
+// const baseUrl = 'https://activejunky-stage.herokuapp.com'
+const baseUrl = 'http://localhost:3000'
 
 function endpt(ep: string): string {
   return `${baseUrl}/${ep}`
@@ -41,8 +41,8 @@ async function fetchHomePage(): Promise<HomepageData> {
   return j
 }
 
-async function getStores(p: { searchTerms: string }): Promise<AJStore[]> {
-  const url = endpt(`/api/search/stores.json?search_terms=${p.searchTerms}`)
+async function searchStores(p: { searchTerms: string }): Promise<AJStore[]> {
+  const url = endpt(`api/search/stores.json?search_terms=${p.searchTerms}`)
   const r = await fetch(url)
   const j: { results: AJStore[] } = await r.json()
   return j.results
@@ -81,9 +81,37 @@ async function allDigitalEvents() {
 
 async function digitalEvent(id: string) {
   const r = await fetch(hdept(`${id}.json`))
-  const j: HeadlessDigitalEvent = await r.json()
+  const j: HeadlessDigitalEventResponseObj = await r.json()
   console.log("RESULT OF GETTING DIGITAL EVENT! ", r.status, JSON.stringify(j))
   return j
+}
+
+async function putToS3(fileObject: any, presignedUrl: string) {
+  const requestOptions = {
+    method: "PUT",
+    headers: {
+      // "Content-Type": fileObject.type,
+    },
+    body: fileObject,
+  };
+  console.log("FILE OBJECT TYPE ! ", fileObject.type)
+  const response = await fetch(presignedUrl, requestOptions);
+  return response;
+}
+
+async function getUploadUrl(id: string): Promise<string> {
+  const url = hdept(`${id}/presigned_put_url.json`)
+  // const url = `http://localhost:3000/${id}/presigned_put_url.json`
+  const r = await fetch(url)
+  const j: { url: string } = await r.json()
+  return j.url
+}
+
+async function uploadImage(file: File, digitalEventId: string) {
+  const url = await getUploadUrl(digitalEventId)
+  console.log("URL TO UPLOAD WITH ! ", url)
+  const uploadResult = await putToS3(file, url)
+  console.log("UPLOAD RESULT! ", uploadResult)
 }
 
 
@@ -93,5 +121,7 @@ export const Backend = {
   allDigitalEvents,
   digitalEvent,
   fetchHomePage,
-  getStores
+  getStores: searchStores,
+
+  uploadImage
 }

@@ -76,3 +76,11 @@ export interface HeadlessDigitalEvent {
   last_published_at: string | null
   content: HeadlessDigitalEventContent
 }
+
+export interface HeadlessDigitalEventResponseObj {
+  id: string
+  title: string
+  last_saved_at: string | null
+  last_published_at: string | null
+  content: HeadlessDigitalEventContent | null
+}

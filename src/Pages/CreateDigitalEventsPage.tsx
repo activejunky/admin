@@ -192,6 +192,7 @@ const EditBanner: React.FC<{ mbInitialDE?: HeadlessDigitalEvent }> = ({ mbInitia
   const [savedTitle, setSavedTitle] = React.useState(banner.title)
   const [savedCashbackStr, setCachbackStr] = React.useState(banner.cashBackString)
   const [savedImageUrl, ssiurl] = React.useState(banner.backgroundImageUrl ?? "")
+  const curId = useCurId()
 
   React.useEffect(() => {
     setSavedTitle(banner.title)
@@ -224,6 +225,15 @@ const EditBanner: React.FC<{ mbInitialDE?: HeadlessDigitalEvent }> = ({ mbInitia
     console.log("SAVED IMAGE URL! ", savedImageUrl)
   }, [savedImageUrl])
 
+  const onInputFile = (evt: React.FormEvent<HTMLInputElement>) => {
+    const files = evt.currentTarget.files
+    if (files) {
+      Backend.uploadImage(files[0], curId).then(r => {
+        console.log("UPLOADED FILE! ")
+      })
+    }
+  }
+
   return (
     <div style={divStyleBase}>
       <h3 className="text-2xl font-bold mb-10">Banner</h3>
@@ -250,6 +260,7 @@ const EditBanner: React.FC<{ mbInitialDE?: HeadlessDigitalEvent }> = ({ mbInitia
           :
           (<></>)
         }
+        <input type="file" title='Upload file' onChange={onInputFile} />
       </div>
     </div>
   )
@@ -263,7 +274,7 @@ async function loadStoreOptions(p: { searchTerms: string }) {
 
 const EditFeaturedStores: React.FC<{}> = ({ }) => {
   const [isShowingModal, setIsShowingModal] = React.useState(false)
-  const [mbStores, setMbStores] = React.useState<null | AJStore[]>(null)
+  const [mbAvailableStores, setMbStores] = React.useState<null | AJStore[]>(null)
   const [selectedStore, setSelectedStore] = React.useState<null | string>()
   const stores = useSelector((state: RootState) => state.editModel.de.content.featuredStores)
   const dispatch = useDispatch<Dispatch>()
@@ -290,14 +301,14 @@ const EditFeaturedStores: React.FC<{}> = ({ }) => {
   }
 
   const onAdd = React.useCallback((storeSlug: string) => {
-    console.log("MB STORES! ", mbStores)
-    if (mbStores) {
-      const newStore = mbStores.find(s => s.url_slug == storeSlug)!
+    console.log("MB STORES! ", mbAvailableStores)
+    if (mbAvailableStores) {
+      const newStore = mbAvailableStores.find(s => s.url_slug == storeSlug)!
       console.log("NEW STORE! ", newStore)
       dispatch.editModel.addFeaturedStore(newStore)
       setIsShowingModal(false)
     }
-  }, [mbStores])
+  }, [mbAvailableStores])
 
 
   return (
@@ -334,32 +345,27 @@ const EditFeaturedStores: React.FC<{}> = ({ }) => {
           <div className="width-full flex justify-end mb-20">
             <button onClick={closeModal}>close</button>
           </div>
-          {mbStores ?
-            (
-              <div>
-                <Async
-                  defaultValue={{ value: mbStores[0].url_slug, label: mbStores[0].name }}
-                  onChange={p => { setSelectedStore(p?.value) }}
-                  formatOptionLabel={({ value, label }) => (
-                    <div style={{ display: "flex", flexDirection: 'column' }}>
-                      <div>{label}</div>
-                    </div>
-                  )}
-                  loadOptions={v => {
-                    async function getAndSet() {
-                      const stores = await Backend.getStores({ searchTerms: v })
-                      setMbStores(stores)
-                      return stores.map(s => ({ value: s.url_slug, label: s.name }))
-                    }
-                    return getAndSet()
-                  }}
-                // defaultOptions={mbStores.map(s => ({ value: s.url_slug, label: s.name }))}
-                />
-              </div>
-            )
-            :
-            (<></>)
-          }
+
+          <div>
+            <Async
+              defaultValue={{ value: '', label: '' }}
+              onChange={p => { setSelectedStore(p?.value) }}
+              formatOptionLabel={({ value, label }) => (
+                <div style={{ display: "flex", flexDirection: 'column' }}>
+                  <div>{label}</div>
+                </div>
+              )}
+              loadOptions={v => {
+                async function getAndSet() {
+                  const stores = await Backend.getStores({ searchTerms: v })
+                  setMbStores(stores)
+                  return stores.map(s => ({ value: s.url_slug, label: s.name }))
+                }
+                return getAndSet()
+              }}
+            // defaultOptions={mbStores.map(s => ({ value: s.url_slug, label: s.name }))}
+            />
+          </div>
           <div className='w-full mt-20 border'>
             {selectedStore
               ?

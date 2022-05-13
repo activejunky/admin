@@ -6,14 +6,14 @@ import { url } from 'inspector'
 import createCachedSelector from 're-reselect'
 import { Root } from 'react-dom/client'
 import { empty } from 'rxjs'
-import { AJStore, Deal, HeadlessDigitalEvent, HeadlessDigitalEventContent, Section } from '../Models'
+import { AJStore, Deal, HeadlessDigitalEvent, HeadlessDigitalEventContent, HeadlessDigitalEventResponseObj, Section } from '../Models'
 import { pipe } from 'fp-ts/lib/function'
 import { Lens, LensFromPath } from 'monocle-ts'
 import { Backend } from '../Backend/Api'
 
 export type PageState = {
   de: HeadlessDigitalEvent
-  mbServerState: HeadlessDigitalEvent | null
+  mbServerState: HeadlessDigitalEventResponseObj | null
 
   isFetching: boolean
   showSuccess: boolean
@@ -55,7 +55,7 @@ export const editModel = createModel<RootModel>()({
     setDigitalEvent(state, payload: HeadlessDigitalEvent) {
       return { ...state, de: payload }
     },
-    setServerDigitalEvent(state, payload: HeadlessDigitalEvent) {
+    setServerDigitalEvent(state, payload: HeadlessDigitalEventResponseObj) {
       return { ...state, mbServerState: payload }
     },
     setShowSuccess(state, payload: boolean) {
@@ -131,9 +131,11 @@ export const editModel = createModel<RootModel>()({
   },
   effects: (dispatch) => ({
     async syncDigitalEvent(payload: string, rootState) {
-      const hde = await Backend.digitalEvent(payload)
+      const hder = await Backend.digitalEvent(payload)
       // console.log("JJJ!!! ", JSON.stringify(j))
-      dispatch.editModel.setServerDigitalEvent(hde)
+      dispatch.editModel.setServerDigitalEvent(hder)
+      const hde = { ...hder, content: hder.content ?? emptyFormState }
+      console.log("HDE ! ", hde)
       dispatch.editModel.setDigitalEvent(hde)
     },
     async finishShowSuccess() {

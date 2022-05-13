@@ -2,6 +2,7 @@ import * as React from 'react'
 import { Link } from 'react-router-dom'
 import { Backend } from '../Backend/Api'
 import { HeadlessDigitalEvent } from '../Models'
+import * as A from 'fp-ts/Array'
 
 
 export const AllDigitalEventsPage: React.FC<{}> = ({ }) => {
@@ -47,3 +48,4 @@ const EventRow: React.FC<{ hde: HeadlessDigitalEvent }> = ({ hde }) => {
     </li>
   )
 }
+

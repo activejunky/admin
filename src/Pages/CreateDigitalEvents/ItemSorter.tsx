@@ -108,7 +108,9 @@ export const AJStoreDnD: React.FC<{ stores: AJStore[], onRemove: (urlSlug: strin
         const oldIndex = items.indexOf(active.id);
         const newIndex = items.indexOf(over?.id ?? "meow");
 
-        return arrayMove(items, oldIndex, newIndex);
+        const newOrder = arrayMove(items, oldIndex, newIndex);
+
+        return newOrder
       });
     }
   }
