@@ -123,9 +123,11 @@ const AllSections: React.FC<{}> = ({ }) => {
 
 const ControlPanel: React.FC<{}> = ({ }) => {
   const id = useCurId()
-  const curForm = useSelector((r: RootState) => r.editModel.de.content)
+  const de = useSelector((r: RootState) => r.editModel.de)
   const tkn = useBearerTkn()
-  const dispatch = useDispatch<Dispatch>()
+  // const dispatch = useDispatch<Dispatch>()
+
+  const curForm = de.content
 
   const onSaveDraft = React.useCallback(() => {
     console.log("CUR FORM! ", curForm)
@@ -143,13 +145,20 @@ const ControlPanel: React.FC<{}> = ({ }) => {
   }, [tkn, id])
 
   return (
-    <div style={{ width: '100%', display: 'flex', justifyContent: 'center', alignItems: 'center', backgroundColor: 'lightgray', padding: 10 }}>
-      <button className="bg-blue-500 text-white py-2 px-4 mr-30" onClick={() => { onSaveDraft() }}>
+    <div style={{ position: 'relative', width: '100%', backgroundColor: 'lightgray', padding: '10xp', height: 100 }}>
+      <div style={{ width: '100%', position: 'absolute', left: 0, top: 10, bottom: 10, display: 'flex', justifyContent: 'center', zIndex: 2 }}>
+        <button className="bg-blue-500 text-white py-2 px-4 mr-30" onClick={() => { onSaveDraft() }}>
 
-        Save Draft
-      </button>
-      <button style={{ marginRight: 30 }}>Preview</button>
-      <button className="bg-orange-500 text-white py-2 px-4" onClick={() => { onPublishDraft() }}>Publish</button>
+          Save Draft
+        </button>
+        <button style={{ marginRight: 30 }}>Preview</button>
+        <button className="bg-orange-500 text-white py-2 px-4" onClick={() => { onPublishDraft() }}>Publish</button>
+      </div>
+
+      <div style={{ width: '100%', position: 'absolute', left: 0, top: 0, bottom: 0, display: 'flex', alignItems: 'flex-end', flexDirection: 'column' }}>
+        <div>Last saved at: </div>
+        <div>{de.last_saved_at}</div>
+      </div>
     </div>
   )
 }

@@ -1,7 +1,10 @@
+import { head } from "fp-ts/lib/ReadonlyNonEmptyArray"
 import { AJStore, Deal, HeadlessDigitalEvent, HeadlessDigitalEventResponseObj } from "../Models"
 
 // const baseUrl = 'https://activejunky-stage.herokuapp.com'
-export const baseUrl = 'http://localhost:3000'
+console.log("PROCESS! ", process.env)
+console.log("API URL! ", process.env.REACT_APP_API_BASE_URL)
+export const baseUrl = process.env.REACT_APP_API_BASE_URL
 
 export const s3BaseUrl = `https://temp-cms-stage-assets.s3.amazonaws.com`
 
@@ -104,7 +107,13 @@ async function putToS3(fileObject: any, presignedUrl: string) {
 async function getUploadUrl(id: string): Promise<string> {
   const url = hdept(`${id}/presigned_put_url.json`)
   // const url = `http://localhost:3000/${id}/presigned_put_url.json`
-  const r = await fetch(url)
+  const headers = new Headers({
+    "Access-Control-Allow-Origin": "*",
+    "Access-Control-Allow-Headers": "*",
+    "Access-Control-Allow-Methods": "*",
+    "Access-Control-Max-Age": "-1",
+  });
+  const r = await fetch(url, { headers: headers })
   const j: { url: string } = await r.json()
   return j.url
 }

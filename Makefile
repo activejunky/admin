@@ -1,3 +1,3 @@
-deploy:
-	npm run build && firebase deploy
+deployStaging:
+	npm run build:staging && firebase deploy
 
