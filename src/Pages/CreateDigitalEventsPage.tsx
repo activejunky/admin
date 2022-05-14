@@ -1,17 +1,18 @@
+import * as O from 'fp-ts/Option'
 import * as React from 'react'
-import { Root } from 'react-dom/client'
 import EdiText from 'react-editext'
+import LoadingOverlay from 'react-loading-overlay-ts'
 import Modal from 'react-modal'
 import { Provider, useDispatch, useSelector } from "react-redux"
 import { useLocation, useParams } from 'react-router-dom'
 import Select from "react-select"
+import Async from 'react-select/async'
+import { toast, ToastContainer } from 'react-toastify'
+import 'react-toastify/dist/ReactToastify.css'
 import { Backend, s3BaseUrl } from '../Backend/Api'
-import { AJStore, Deal, HeadlessDigitalEvent } from '../Models'
+import { AJStore, HeadlessDigitalEvent } from '../Models'
 import { AJStoreDnD } from './CreateDigitalEvents/ItemSorter'
 import { Dispatch, RootState, store } from './CreateDigitalEventsPageVM'
-import { ToastContainer, toast } from 'react-toastify';
-import 'react-toastify/dist/ReactToastify.css';
-import Async, { useAsync } from 'react-select/async';
 
 const customStyles = {
   content: {
@@ -56,7 +57,6 @@ export const DigitalEventsPage: React.FC<{}> = ({ }) => {
         <CurIdContext.Provider value={id}>
           {/* <div><Preview /></div> */}
           <ControlPanel />
-          <EditPageTitle />
           <AllSections />
         </CurIdContext.Provider>
       </Provider>
@@ -70,6 +70,7 @@ const AllSections: React.FC<{}> = ({ }) => {
   const additionalStoresSection = useSelector((s: RootState) => s.editModel.de.content.additionalStores)
   const id = useCurId()
   const showSuccess = useSelector((s: RootState) => s.editModel.showSuccess)
+  const isLoading = useSelector((s: RootState) => s.editModel.isFetching)
 
   React.useEffect(() => {
     dispatch.editModel.syncDigitalEvent(id)
@@ -89,28 +90,35 @@ const AllSections: React.FC<{}> = ({ }) => {
         pauseOnHover
         theme='colored'
       />
-      <SectionContainer>
-        <EditBanner />
-      </SectionContainer>
-      <SectionContainer>
-        <EditFeaturedStores />
-      </SectionContainer>
-      {additionalStoresSection
-        ?
-        (
-          <SectionContainer onRemove={() => { dispatch.editModel.addAdditionalStoresSection(false) }}>
-            <EditAdditionalStores />
-          </SectionContainer>
-        )
-        :
-        (
-          <div style={{ width: '100%', display: 'flex', marginTop: 20, marginBottom: 20, height: 30 }}>
-            <button onClick={() => { dispatch.editModel.addAdditionalStoresSection(true) }}>
-              Add Additional Stores Section
-            </button>
-          </div>
-        )
-      }
+      <LoadingOverlay
+        active={O.isSome(isLoading)}
+        spinner
+        text={O.toNullable(isLoading) ?? ''}
+      >
+        <EditPageTitle />
+        <SectionContainer>
+          <EditBanner />
+        </SectionContainer>
+        <SectionContainer>
+          <EditFeaturedStores />
+        </SectionContainer>
+        {additionalStoresSection
+          ?
+          (
+            <SectionContainer onRemove={() => { dispatch.editModel.addAdditionalStoresSection(false) }}>
+              <EditAdditionalStores />
+            </SectionContainer>
+          )
+          :
+          (
+            <div style={{ width: '100%', display: 'flex', marginTop: 20, marginBottom: 20, height: 30 }}>
+              <button onClick={() => { dispatch.editModel.addAdditionalStoresSection(true) }}>
+                Add Additional Stores Section
+              </button>
+            </div>
+          )
+        }
+      </LoadingOverlay>
       {/* <SectionContainer>
         <EditFeaturedDeals />
       </SectionContainer> */}
@@ -125,13 +133,15 @@ const ControlPanel: React.FC<{}> = ({ }) => {
   const id = useCurId()
   const de = useSelector((r: RootState) => r.editModel.de)
   const tkn = useBearerTkn()
-  // const dispatch = useDispatch<Dispatch>()
+  const dispatch = useDispatch<Dispatch>()
 
   const curForm = de.content
 
   const onSaveDraft = React.useCallback(() => {
     console.log("CUR FORM! ", curForm)
+    dispatch.editModel.setIsFetching(O.some('Saving...'))
     Backend.saveDraft(tkn, id, curForm).then(_ => {
+      dispatch.editModel.setIsFetching(O.none)
       toast.success("Saved!")
     })
   }, [tkn, id, curForm])

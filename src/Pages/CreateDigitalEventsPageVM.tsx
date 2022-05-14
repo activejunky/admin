@@ -10,12 +10,14 @@ import { AJStore, Deal, HeadlessDigitalEvent, HeadlessDigitalEventContent, Headl
 import { pipe } from 'fp-ts/lib/function'
 import { Lens, LensFromPath } from 'monocle-ts'
 import { Backend } from '../Backend/Api'
+import { boolean } from 'fp-ts'
+import * as O from 'fp-ts/Option'
 
 export type PageState = {
   de: HeadlessDigitalEvent
   mbServerState: HeadlessDigitalEventResponseObj | null
 
-  isFetching: boolean
+  isFetching: O.Option<string>
   showSuccess: boolean
 }
 
@@ -44,7 +46,7 @@ const emptyDE_State: HeadlessDigitalEvent = {
 const emptyPageState: PageState = {
   de: emptyDE_State,
   mbServerState: null,
-  isFetching: false,
+  isFetching: O.none,
   showSuccess: false
 }
 
@@ -52,6 +54,9 @@ export const editModel = createModel<RootModel>()({
   state: emptyPageState, // initial state
   reducers: {
     // handle state changes with pure functions
+    setIsFetching(state, payload: O.Option<string>) {
+      return { ...state, isFetching: payload }
+    },
     setDigitalEvent(state, payload: HeadlessDigitalEvent) {
       return { ...state, de: payload }
     },
@@ -131,9 +136,11 @@ export const editModel = createModel<RootModel>()({
   },
   effects: (dispatch) => ({
     async syncDigitalEvent(payload: string, rootState) {
+      dispatch.editModel.setIsFetching(O.some('Loading...'))
       const hder = await Backend.digitalEvent(payload)
       // console.log("JJJ!!! ", JSON.stringify(j))
       dispatch.editModel.setServerDigitalEvent(hder)
+      dispatch.editModel.setIsFetching(O.none)
       const hde = { ...hder, content: hder.content ?? emptyFormState }
       console.log("HDE ! ", hde)
       dispatch.editModel.setDigitalEvent(hde)

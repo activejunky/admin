@@ -1,12 +1,9 @@
 import { head } from "fp-ts/lib/ReadonlyNonEmptyArray"
 import { AJStore, Deal, HeadlessDigitalEvent, HeadlessDigitalEventResponseObj } from "../Models"
 
-// const baseUrl = 'https://activejunky-stage.herokuapp.com'
-console.log("PROCESS! ", process.env)
-console.log("API URL! ", process.env.REACT_APP_API_BASE_URL)
 export const baseUrl = process.env.REACT_APP_API_BASE_URL
 
-export const s3BaseUrl = `https://temp-cms-stage-assets.s3.amazonaws.com`
+export const s3BaseUrl = process.env.REACT_APP_S3_BUCKET_URL
 
 function endpt(ep: string): string {
   return `${baseUrl}/${ep}`
