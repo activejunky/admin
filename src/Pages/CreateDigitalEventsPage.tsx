@@ -10,7 +10,7 @@ import Async from 'react-select/async'
 import { toast, ToastContainer } from 'react-toastify'
 import 'react-toastify/dist/ReactToastify.css'
 import { Backend, s3BaseUrl } from '../Backend/Api'
-import { AJStore, HeadlessDigitalEvent } from '../Models'
+import { AdditionalStoresSection, AJStore, featuredStoresSectionT, HeadlessDigitalEvent, isAdditionalStoresSection, isFeaturedStoresSection, isKnownSection, knownSectionT, Section } from '../Models'
 import { AJStoreDnD } from './CreateDigitalEvents/ItemSorter'
 import { Dispatch, RootState, store } from './CreateDigitalEventsPageVM'
 
@@ -23,7 +23,8 @@ const customStyles = {
     marginRight: '-50%',
     transform: 'translate(-50%, -50%)',
     width: '80vw',
-    height: '80vh'
+    height: '80vh',
+    zIndex: 100
   },
 };
 
@@ -102,22 +103,12 @@ const AllSections: React.FC<{}> = ({ }) => {
         <SectionContainer>
           <EditFeaturedStores />
         </SectionContainer>
-        {additionalStoresSection
-          ?
-          (
-            <SectionContainer onRemove={() => { dispatch.editModel.addAdditionalStoresSection(false) }}>
-              <EditAdditionalStores />
-            </SectionContainer>
-          )
-          :
-          (
-            <div style={{ width: '100%', display: 'flex', marginTop: 20, marginBottom: 20, height: 30 }}>
-              <button onClick={() => { dispatch.editModel.addAdditionalStoresSection(true) }}>
-                Add Additional Stores Section
-              </button>
-            </div>
-          )
-        }
+        <div style={{ width: '100%', display: 'flex', marginTop: 20, marginBottom: 20, height: 30 }}>
+          <button onClick={() => { dispatch.editModel.addAdditionalStoresSection(true) }}>
+            Add Additional Stores Section
+          </button>
+        </div>
+        <CmsSections />
       </LoadingOverlay>
       {/* <SectionContainer>
         <EditFeaturedDeals />
@@ -126,6 +117,37 @@ const AllSections: React.FC<{}> = ({ }) => {
   )
 }
 
+
+const CmsSections: React.FC<{}> = ({ }) => {
+  const sections = useSelector((rs: RootState) => rs.editModel.de.content.sections)
+  const dispatch = useDispatch<Dispatch>()
+
+  React.useEffect(() => {
+    console.log("SECTIONS! ", sections)
+  }, [sections])
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column' }}>
+      {sections.map(s => {
+        if (isKnownSection(s)) {
+          // if (isFeaturedStoresSection(s.section)) {
+          //   return <div>Featured! {s.section.stores.map(s => s.name).join(',')}</div>
+          // }
+
+          if (isAdditionalStoresSection(s.section)) {
+            return (
+              <SectionContainer onRemove={() => { dispatch.editModel.addAdditionalStoresSection(false) }}>
+                <EditAdditionalStores section={s.section} />
+              </SectionContainer>
+            )
+          }
+
+        }
+
+        return (<></>)
+      })}
+    </div>
+  )
+}
 
 
 
@@ -177,7 +199,7 @@ const Preview: React.FC<{}> = ({ }) => {
   const fullPage = useSelector((state: RootState) => state)
 
   return (
-    <div>{JSON.stringify(fullPage)}</div>
+    <div>{JSON.stringify(fullPage.editModel.de.content.sections)}</div>
   )
 }
 
@@ -197,7 +219,7 @@ const EditPageTitle: React.FC<{}> = ({ }) => {
   }
 
   return (
-    <div style={{ width: '100%', display: 'flex', marginBottom: 30, alignItems: 'center' }}>
+    <div className='mt-10' style={{ width: '100%', display: 'flex', marginBottom: 30, alignItems: 'center' }}>
       <h3 className="text-2xl font-bold" style={{ marginRight: 18 }}>Page Title</h3>
       <EdiText type="text" value={value} onSave={(val) => { handleSave(val) }} />
     </div>
@@ -233,7 +255,7 @@ const EditBanner: React.FC<{ mbInitialDE?: HeadlessDigitalEvent }> = ({ mbInitia
   }
 
   const divStyleBase: React.CSSProperties = {
-    width: '80%', border: '3px solid black', display: 'flex', flexDirection: 'column', alignItems: 'flex-start'
+    width: '100%', border: '3px solid black', display: 'flex', flexDirection: 'column', alignItems: 'flex-start'
   }
 
   const divStyle = savedImageUrl ? {
@@ -247,10 +269,12 @@ const EditBanner: React.FC<{ mbInitialDE?: HeadlessDigitalEvent }> = ({ mbInitia
   const onInputFile = (evt: React.FormEvent<HTMLInputElement>) => {
     const files = evt.currentTarget.files
     if (files) {
+      dispatch.editModel.setIsFetching(O.some(''))
       Backend.uploadImage(files[0], curId).then(r => {
         console.log("UPLOADED FILE! ")
         const s3Url = `${s3BaseUrl}/${curId}`
         dispatch.editModel.setBannerImageUrl(s3Url)
+        dispatch.editModel.setIsFetching(O.none)
       })
     }
   }
@@ -300,13 +324,6 @@ const EditFeaturedStores: React.FC<{}> = ({ }) => {
   const stores = useSelector((state: RootState) => state.editModel.de.content.featuredStores)
   const dispatch = useDispatch<Dispatch>()
 
-  React.useEffect(() => {
-    Backend.getStores({ searchTerms: '' }).then(s => {
-      setMbStores(s)
-    }).catch(e => {
-      console.log("FAILED TO GET STORES! ", e)
-    })
-  }, [])
 
   function openModal() {
     setIsShowingModal(true);
@@ -362,48 +379,69 @@ const EditFeaturedStores: React.FC<{}> = ({ }) => {
         style={customStyles}
         contentLabel="Example Modal"
       >
-        <div className="width-full">
-          <div className="width-full flex justify-end mb-20">
-            <button onClick={closeModal}>close</button>
-          </div>
-
-          <div>
-            <Async
-              defaultValue={{ value: '', label: '' }}
-              onChange={p => { setSelectedStore(p?.value) }}
-              formatOptionLabel={({ value, label }) => (
-                <div style={{ display: "flex", flexDirection: 'column' }}>
-                  <div>{label}</div>
-                </div>
-              )}
-              loadOptions={v => {
-                async function getAndSet() {
-                  const stores = await Backend.getStores({ searchTerms: v })
-                  setMbStores(stores)
-                  return stores.map(s => ({ value: s.url_slug, label: s.name }))
-                }
-                return getAndSet()
-              }}
-            // defaultOptions={mbStores.map(s => ({ value: s.url_slug, label: s.name }))}
-            />
-          </div>
-          <div className='w-full mt-20 border'>
-            {selectedStore
-              ?
-              (
-                <button
-                  className="w-full rounded bg-blue-500 hover:bg-blue-300 text-white py-2 px-4"
-                  onClick={() => onAdd(selectedStore)}
-                >
-                  Add
-                </button>
-              )
-              :
-              (<></>)
-            }
-          </div>
-        </div>
+        <SearchAndAddStoreModalContent
+          closeModal={closeModal}
+          onChange={p => { setSelectedStore(p?.value) }}
+          setMatchingStores={setMbStores}
+          onAdd={onAdd}
+          selectedStoreSlug={selectedStore}
+        />
       </Modal>
+    </div>
+  )
+}
+
+
+type SearchAndAddStoreModalContentProps = {
+  closeModal: () => void
+  onChange: (p: { value: string, label: string } | null) => void
+  setMatchingStores: (stores: AJStore[]) => void
+  selectedStoreSlug: string | null | undefined
+  onAdd: (storeSlug: string) => void
+}
+
+const SearchAndAddStoreModalContent: React.FC<SearchAndAddStoreModalContentProps> = ({ closeModal, onChange, setMatchingStores, selectedStoreSlug, onAdd }) => {
+  return (
+    <div className="width-full">
+      <div className="width-full flex justify-end mb-20">
+        <button onClick={closeModal}>close</button>
+      </div>
+
+      <div>
+        <Async
+          defaultValue={{ value: '', label: '' }}
+          onChange={onChange}
+          formatOptionLabel={({ value, label }) => (
+            <div style={{ display: "flex", flexDirection: 'column' }}>
+              <div>{label}</div>
+            </div>
+          )}
+          loadOptions={v => {
+            async function getAndSet() {
+              const stores = await Backend.getStores({ searchTerms: v })
+              setMatchingStores(stores)
+              return stores.map(s => ({ value: s.url_slug, label: s.name }))
+            }
+            return getAndSet()
+          }}
+        // defaultOptions={mbStores.map(s => ({ value: s.url_slug, label: s.name }))}
+        />
+      </div>
+      <div className='w-full mt-20 border'>
+        {selectedStoreSlug
+          ?
+          (
+            <button
+              className="w-full rounded bg-blue-500 hover:bg-blue-300 text-white py-2 px-4"
+              onClick={() => onAdd(selectedStoreSlug)}
+            >
+              Add
+            </button>
+          )
+          :
+          (<></>)
+        }
+      </div>
     </div>
   )
 }
@@ -539,11 +577,11 @@ const SectionContainer: React.FC<React.PropsWithChildren<{ onRemove?: () => void
 }
 
 
-const EditAdditionalStores: React.FC<{}> = ({ }) => {
+const EditAdditionalStores: React.FC<{ section: AdditionalStoresSection }> = ({ section }) => {
   const [isShowingModal, setIsShowingModal] = React.useState(false)
   const [mbStores, setMbStores] = React.useState<null | AJStore[]>(null)
   const [selectedStore, setSelectedStore] = React.useState<null | string>()
-  const stores = useSelector((state: RootState) => state.editModel.de.content.additionalStores!.stores)
+  const stores = section.stores
   const dispatch = useDispatch<Dispatch>()
 
   React.useEffect(() => {
@@ -600,40 +638,13 @@ const EditAdditionalStores: React.FC<{}> = ({ }) => {
         style={customStyles}
         contentLabel="Example Modal"
       >
-        <div style={{ width: '100%' }}>
-          <button onClick={closeModal}>close</button>
-          {mbStores ?
-            (
-              <div>
-                <Select
-                  defaultValue={{ value: mbStores[0].url_slug, label: mbStores[0].name }}
-                  onChange={p => { setSelectedStore(p?.value) }}
-                  formatOptionLabel={({ value, label }) => (
-                    <div id={label} style={{ display: "flex", flexDirection: 'column' }}>
-                      <div>{label}</div>
-                    </div>
-                  )}
-                  options={mbStores.map(s => ({ value: s.url_slug, label: s.name }))}
-                />
-              </div>
-            )
-            :
-            (<></>)
-          }
-          <div>
-            {selectedStore
-              ?
-              (
-
-                <button onClick={() => onAdd(selectedStore)}>
-                  Add
-                </button>
-              )
-              :
-              (<></>)
-            }
-          </div>
-        </div>
+        <SearchAndAddStoreModalContent
+          closeModal={closeModal}
+          onChange={p => { setSelectedStore(p?.value) }}
+          setMatchingStores={setMbStores}
+          onAdd={onAdd}
+          selectedStoreSlug={selectedStore}
+        />
       </Modal>
     </div>
   )

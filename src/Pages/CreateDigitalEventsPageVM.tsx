@@ -1,17 +1,16 @@
 import { createModel, init, Models, RematchDispatch, RematchRootState } from '@rematch/core'
 import immerPlugin from '@rematch/immer'
 import createSelectPlugin from '@rematch/select'
-import produce from 'immer'
-import { url } from 'inspector'
-import createCachedSelector from 're-reselect'
-import { Root } from 'react-dom/client'
-import { empty } from 'rxjs'
-import { AJStore, Deal, HeadlessDigitalEvent, HeadlessDigitalEventContent, HeadlessDigitalEventResponseObj, Section } from '../Models'
+import * as A from 'fp-ts/Array'
 import { pipe } from 'fp-ts/lib/function'
-import { Lens, LensFromPath } from 'monocle-ts'
-import { Backend } from '../Backend/Api'
-import { boolean } from 'fp-ts'
 import * as O from 'fp-ts/Option'
+import { Lens } from 'monocle-ts'
+import * as Op from 'monocle-ts/lib/Optional'
+import createCachedSelector from 're-reselect'
+import { Backend } from '../Backend/Api'
+import { AdditionalStoresSection, AJStore, FeaturedStoresSection, HeadlessDigitalEvent, HeadlessDigitalEventContent, HeadlessDigitalEventResponseObj, isAdditionalStoresSection, isKnownSection, Modelenz, Section } from '../Models'
+import * as ROA from 'fp-ts/ReadonlyArray'
+import { dropAt } from 'fp-ts-std/ReadonlyArray'
 
 export type PageState = {
   de: HeadlessDigitalEvent
@@ -22,14 +21,17 @@ export type PageState = {
 }
 
 const deL = Lens.fromProp<PageState>()('de')
-const contentL = deL.compose(Lens.fromProp<HeadlessDigitalEvent>()('content'))
-const bannerL = contentL.compose(Lens.fromProp<HeadlessDigitalEventContent>()('banner'))
-
+const deContentL = deL.compose(Lens.fromProp<HeadlessDigitalEvent>()('content'))
+const deBannerL = deContentL.compose(Lens.fromProp<HeadlessDigitalEventContent>()('banner'))
+const deFeaturedStoresL = deContentL.compose(Lens.fromProp<HeadlessDigitalEventContent>()('featuredStores'))
+const deSectionsL = deContentL.compose(Lens.fromProp<HeadlessDigitalEventContent>()('sections')) as unknown as Lens<PageState, readonly Section[]>
+const deSectionsFeaturedStoresStoresL = deSectionsL.composePrism(Modelenz.firstFeaturedStoreSectionP).composeLens(Lens.fromProp<FeaturedStoresSection>()('stores'))
+const deSectionsAdditionalStoresStoresL = deSectionsL.composePrism(Modelenz.firstAdditionalStoreSectionP).composeLens(Lens.fromProp<AdditionalStoresSection>()('stores'))
 
 export const emptyFormState: HeadlessDigitalEventContent = {
   pageTitle: '',
   banner: { title: '', cashBackString: '', backgroundImageUrl: null },
-  sections: [],
+  sections: [{ tag: 'KNOWN', section: { tag: 'FEATURED_STORES', stores: [] } }],
   featuredStores: [],
   additionalStores: null
   // featuredDeals: [],
@@ -76,33 +78,39 @@ export const editModel = createModel<RootModel>()({
       return pipe(state, bannerTitleL.modify(_ => payload))
     },
     setBannerCachback(state, payload: string) {
-      return pipe(state, bannerL.modify(b => ({ ...b, cashBackString: payload })))
+      return pipe(state, deBannerL.modify(b => ({ ...b, cashBackString: payload })))
     },
     setBannerImageUrl(state, payload: string) {
-      return pipe(state, bannerL.modify(b => ({ ...b, backgroundImageUrl: payload })))
+      return pipe(state, deBannerL.modify(b => ({ ...b, backgroundImageUrl: payload })))
     },
 
+    setSection(state, payload: { sectionId: number, section: Section }) {
+      const indexL = Op.index(payload.sectionId)(deSectionsL.asOptional())
+      const withUpdate = indexL.set(payload.section)(state)
+      return withUpdate
+    },
     addFeaturedStore(state, payload: AJStore) {
-      // const withNewSections: Section[] = state.de.content.sections.map(s => {
-      //   s.modifyIfFeaturedStore(fss => fss.withAddedStore(payload))
-
-      //   return s
-      // })
-      const withNewForm = produce(state.de.content, draft => {
-        draft.featuredStores.push(payload)
-      })
-      return { ...state, de: { ...state.de, content: { ...withNewForm, sections: [] } } }
+      const withS = deSectionsFeaturedStoresStoresL.modify(ss => ss.concat([payload]))(state)
+      console.log("WITH S! ", withS.de.content)
+      const z: PageState = pipe(
+        state,
+        deSectionsFeaturedStoresStoresL.modify(ss => ss.concat([payload])),
+        deFeaturedStoresL.modify(ss => ([...ss, payload]))
+      )
+      console.log("Z ADD! ", z.de.content.sections)
+      return z
     },
     removeFeaturedStore(state, payload: string) {
-      // const withRemovedStoreSections = state.de.content.sections.map(s => {
-      //   s.modifyIfFeaturedStore(ffs => ffs.withRemovedStore(payload))
-      //   return s
-      // })
-      const withRemovedStore = produce(state.de.content.featuredStores, draft => {
-        const index = draft.findIndex(s => s.url_slug === payload)
-        if (index !== -1) draft.splice(index, 1)
-      })
-      return { ...state, de: { ...state.de, content: { ...state.de.content, featuredStores: withRemovedStore, sections: [] } } }
+      const withModSections = deSectionsFeaturedStoresStoresL.modify(
+        ss => pipe(ss, A.filter(s => s.url_slug != payload))
+      )(state)
+
+
+      return pipe(
+        state,
+        deFeaturedStoresL.modify(ss => ss.filter(s => s.url_slug != payload)),
+        deSectionsFeaturedStoresStoresL.modify(ss => ss.filter(s => s.url_slug != payload))
+      )
     },
     // addFeaturedDeal(state, payload: Deal) {
     //   const withNewForm = produce(state.de.content, draft => {
@@ -120,18 +128,17 @@ export const editModel = createModel<RootModel>()({
 
     addAdditionalStoresSection(state, payload: boolean) {
       if (payload) {
-        return { ...state, de: { ...state.de, content: { ...state.de.content, additionalStores: { title: "Additional Stores", stores: [] } } } }
-      } else {
-        return { ...state, de: { ...state.de, content: { ...state.de.content, additionalStores: null } } }
+        return deSectionsL.modify(s => ([...s, { tag: 'KNOWN', section: { tag: 'ADDITIONAL_STORES', stores: [] } }]))(state)
       }
+      return deSectionsL.modify(ss => pipe(ss, ROA.filter(s => !(isKnownSection(s) && isAdditionalStoresSection(s.section)))))(state)
     },
     addAdditionalStore(state, payload: AJStore) {
-      const curSection = state.de.content.additionalStores
-      if (curSection) {
-        const content: HeadlessDigitalEventContent = { ...state.de.content, additionalStores: { title: "Additional Stores", stores: [...curSection.stores, payload] } }
-        const de: HeadlessDigitalEvent = { ...state.de, content }
-        return { ...state, de }
-      }
+      const z: PageState = pipe(
+        state,
+        deSectionsAdditionalStoresStoresL.modify(ss => ss.concat([payload]))
+      )
+      console.log("Z ADD! ", z.de.content.sections)
+      return z
     }
   },
   effects: (dispatch) => ({

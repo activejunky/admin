@@ -69,7 +69,7 @@ async function saveDraft(tkn: string, id: string, content: Object) {
   });
   const body: BodyInit = JSON.stringify({ content })
   const reqInit: RequestInit = { method: 'POST', body, headers }
-  const url = hdept(`${id}/save`)
+  const url = hdept(`${id}/save.json`)
   const r = await fetch(url, reqInit)
   console.log("R! ", r.status)
 }
