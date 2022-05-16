@@ -1,3 +1,4 @@
+import { pipe } from 'fp-ts/lib/function'
 import * as O from 'fp-ts/Option'
 import * as React from 'react'
 import EdiText from 'react-editext'
@@ -146,11 +147,19 @@ const CmsSections: React.FC<{}> = ({ }) => {
 
         return (<></>)
       })}
-      <div style={{ width: '100%', display: 'flex', marginTop: 20, marginBottom: 20, height: 30 }}>
-        <button onClick={() => { dispatch.editModel.addAdditionalStoresSection(true) }}>
-          Add Additional Stores Section
-        </button>
-      </div>
+      {sections.filter(s => isKnownSection(s) && isAdditionalStoresSection(s.section)).length === 0
+        ?
+        (
+
+          <div style={{ width: '100%', display: 'flex', marginTop: 20, marginBottom: 20, height: 30 }}>
+            <button onClick={() => { dispatch.editModel.addAdditionalStoresSection(true) }}>
+              Add Additional Stores Section
+            </button>
+          </div>
+        )
+        :
+        (<></>)
+      }
     </div>
   )
 }
