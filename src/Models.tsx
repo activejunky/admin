@@ -2,7 +2,10 @@ import { array, readonlyArray } from "fp-ts"
 import produce from "immer"
 import { fromTraversable, iso, Lens, Prism, Traversal } from 'monocle-ts'
 import * as Op from 'monocle-ts/lib/Optional'
+import * as O from 'fp-ts/Option'
 import * as A from 'fp-ts/Array'
+import * as Idx from 'monocle-ts/lib/index'
+import * as IdxA from 'monocle-ts/Index/Array'
 import { Traversable } from "fp-ts/lib/Traversable"
 import { first } from "rxjs"
 import { pipe } from "fp-ts/lib/function"
@@ -142,6 +145,26 @@ export module Modelenz {
       return AR.head(fss)
     },
     fs => [{ tag: 'KNOWN', section: fs }]
+  )
+
+  export const featuredStoresP = new Prism<Section, FeaturedStoresSection>(
+    s => {
+      if (isKnownSection(s) && isFeaturedStoresSection(s.section)) {
+        return O.some(s.section)
+      }
+      return O.none
+    },
+    fs => ({ tag: 'KNOWN', section: fs })
+  )
+
+  export const additionalStoresP = new Prism<Section, AdditionalStoresSection>(
+    s => {
+      if (isKnownSection(s) && isAdditionalStoresSection(s.section)) {
+        return O.some(s.section)
+      }
+      return O.none
+    },
+    fs => ({ tag: 'KNOWN', section: fs })
   )
 
   export const firstAdditionalStoreSectionP = new Prism<readonly Section[], AdditionalStoresSection>(

@@ -10,7 +10,7 @@ import Async from 'react-select/async'
 import { toast, ToastContainer } from 'react-toastify'
 import 'react-toastify/dist/ReactToastify.css'
 import { Backend, s3BaseUrl } from '../Backend/Api'
-import { AdditionalStoresSection, AJStore, featuredStoresSectionT, HeadlessDigitalEvent, isAdditionalStoresSection, isFeaturedStoresSection, isKnownSection, knownSectionT, Section } from '../Models'
+import { AdditionalStoresSection, AJStore, FeaturedStoresSection, featuredStoresSectionT, HeadlessDigitalEvent, isAdditionalStoresSection, isFeaturedStoresSection, isKnownSection, knownSectionT, Section } from '../Models'
 import { AJStoreDnD } from './CreateDigitalEvents/ItemSorter'
 import { Dispatch, RootState, store } from './CreateDigitalEventsPageVM'
 
@@ -100,14 +100,9 @@ const AllSections: React.FC<{}> = ({ }) => {
         <SectionContainer>
           <EditBanner />
         </SectionContainer>
-        <SectionContainer>
+        {/* <SectionContainer>
           <EditFeaturedStores />
-        </SectionContainer>
-        <div style={{ width: '100%', display: 'flex', marginTop: 20, marginBottom: 20, height: 30 }}>
-          <button onClick={() => { dispatch.editModel.addAdditionalStoresSection(true) }}>
-            Add Additional Stores Section
-          </button>
-        </div>
+        </SectionContainer> */}
         <CmsSections />
       </LoadingOverlay>
       {/* <SectionContainer>
@@ -133,6 +128,14 @@ const CmsSections: React.FC<{}> = ({ }) => {
           //   return <div>Featured! {s.section.stores.map(s => s.name).join(',')}</div>
           // }
 
+          if (isFeaturedStoresSection(s.section)) {
+            return (
+              <SectionContainer>
+                <EditFeaturedStores section={s.section} />
+              </SectionContainer>
+            )
+          }
+
           if (isAdditionalStoresSection(s.section)) {
             return (
               <SectionContainer onRemove={() => { dispatch.editModel.addAdditionalStoresSection(false) }}>
@@ -145,6 +148,11 @@ const CmsSections: React.FC<{}> = ({ }) => {
 
         return (<></>)
       })}
+      <div style={{ width: '100%', display: 'flex', marginTop: 20, marginBottom: 20, height: 30 }}>
+        <button onClick={() => { dispatch.editModel.addAdditionalStoresSection(true) }}>
+          Add Additional Stores Section
+        </button>
+      </div>
     </div>
   )
 }
@@ -164,6 +172,7 @@ const ControlPanel: React.FC<{}> = ({ }) => {
     dispatch.editModel.setIsFetching(O.some('Saving...'))
     Backend.saveDraft(tkn, id, curForm).then(_ => {
       dispatch.editModel.setIsFetching(O.none)
+      dispatch.editModel.syncDigitalEvent(id)
       toast.success("Saved!")
     })
   }, [tkn, id, curForm])
@@ -179,11 +188,11 @@ const ControlPanel: React.FC<{}> = ({ }) => {
   return (
     <div style={{ position: 'relative', width: '100%', backgroundColor: 'lightgray', padding: '10xp', height: 100 }}>
       <div style={{ width: '100%', position: 'absolute', left: 0, top: 10, bottom: 10, display: 'flex', justifyContent: 'center', zIndex: 2 }}>
-        <button className="bg-blue-500 text-white py-2 px-4 mr-30" onClick={() => { onSaveDraft() }}>
+        <button className="bg-blue-500 text-white py-2 px-4 mr-10" onClick={() => { onSaveDraft() }}>
 
           Save Draft
         </button>
-        <button style={{ marginRight: 30 }}>Preview</button>
+        {/* <button style={{ marginRight: 30 }}>Preview</button> */}
         <button className="bg-orange-500 text-white py-2 px-4" onClick={() => { onPublishDraft() }}>Publish</button>
       </div>
 
@@ -317,11 +326,11 @@ async function loadStoreOptions(p: { searchTerms: string }) {
   return stores.map(s => ({ label: s.name, value: s.url_slug }))
 }
 
-const EditFeaturedStores: React.FC<{}> = ({ }) => {
+const EditFeaturedStores: React.FC<{ section: FeaturedStoresSection }> = ({ section }) => {
   const [isShowingModal, setIsShowingModal] = React.useState(false)
   const [mbAvailableStores, setMbStores] = React.useState<null | AJStore[]>(null)
   const [selectedStore, setSelectedStore] = React.useState<null | string>()
-  const stores = useSelector((state: RootState) => state.editModel.de.content.featuredStores)
+  const stores = section.stores
   const dispatch = useDispatch<Dispatch>()
 
 

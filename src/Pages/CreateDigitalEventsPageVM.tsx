@@ -4,7 +4,7 @@ import createSelectPlugin from '@rematch/select'
 import * as A from 'fp-ts/Array'
 import { pipe } from 'fp-ts/lib/function'
 import * as O from 'fp-ts/Option'
-import { Lens } from 'monocle-ts'
+import { lens, Lens } from 'monocle-ts'
 import * as Op from 'monocle-ts/lib/Optional'
 import createCachedSelector from 're-reselect'
 import { Backend } from '../Backend/Api'
@@ -90,15 +90,12 @@ export const editModel = createModel<RootModel>()({
       return withUpdate
     },
     addFeaturedStore(state, payload: AJStore) {
-      const withS = deSectionsFeaturedStoresStoresL.modify(ss => ss.concat([payload]))(state)
-      console.log("WITH S! ", withS.de.content)
-      const z: PageState = pipe(
-        state,
-        deSectionsFeaturedStoresStoresL.modify(ss => ss.concat([payload])),
-        deFeaturedStoresL.modify(ss => ([...ss, payload]))
-      )
-      console.log("Z ADD! ", z.de.content.sections)
-      return z
+      return deSectionsL.modify(ss => {
+        return ss.map(s => {
+          const lnz = Modelenz.featuredStoresP.composeLens(Lens.fromProp<FeaturedStoresSection>()('stores'))
+          return lnz.modify(ss => ([...ss, payload]))(s)
+        })
+      })(state)
     },
     removeFeaturedStore(state, payload: string) {
       const withModSections = deSectionsFeaturedStoresStoresL.modify(
@@ -133,12 +130,12 @@ export const editModel = createModel<RootModel>()({
       return deSectionsL.modify(ss => pipe(ss, ROA.filter(s => !(isKnownSection(s) && isAdditionalStoresSection(s.section)))))(state)
     },
     addAdditionalStore(state, payload: AJStore) {
-      const z: PageState = pipe(
-        state,
-        deSectionsAdditionalStoresStoresL.modify(ss => ss.concat([payload]))
-      )
-      console.log("Z ADD! ", z.de.content.sections)
-      return z
+      return deSectionsL.modify(ss => {
+        return ss.map(s => {
+          const lnz = Modelenz.additionalStoresP.composeLens(Lens.fromProp<AdditionalStoresSection>()('stores'))
+          return lnz.modify(ss => ([...ss, payload]))(s)
+        })
+      })(state)
     }
   },
   effects: (dispatch) => ({
