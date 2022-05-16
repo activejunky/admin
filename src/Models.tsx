@@ -109,8 +109,8 @@ export type HeadlessDigitalEventContent = {
   pageTitle: string
   banner: BannerContent
   sections: Section[]
-  featuredStores: AJStore[]
-  additionalStores: null | { title: string, stores: AJStore[] }
+  // featuredStores: AJStore[]
+  // additionalStores: null | { title: string, stores: AJStore[] }
   // featuredDeals: Deal[]
 }
 

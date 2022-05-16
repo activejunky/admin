@@ -23,17 +23,12 @@ export type PageState = {
 const deL = Lens.fromProp<PageState>()('de')
 const deContentL = deL.compose(Lens.fromProp<HeadlessDigitalEvent>()('content'))
 const deBannerL = deContentL.compose(Lens.fromProp<HeadlessDigitalEventContent>()('banner'))
-const deFeaturedStoresL = deContentL.compose(Lens.fromProp<HeadlessDigitalEventContent>()('featuredStores'))
 const deSectionsL = deContentL.compose(Lens.fromProp<HeadlessDigitalEventContent>()('sections')) as unknown as Lens<PageState, readonly Section[]>
-const deSectionsFeaturedStoresStoresL = deSectionsL.composePrism(Modelenz.firstFeaturedStoreSectionP).composeLens(Lens.fromProp<FeaturedStoresSection>()('stores'))
-const deSectionsAdditionalStoresStoresL = deSectionsL.composePrism(Modelenz.firstAdditionalStoreSectionP).composeLens(Lens.fromProp<AdditionalStoresSection>()('stores'))
 
 export const emptyFormState: HeadlessDigitalEventContent = {
   pageTitle: '',
   banner: { title: '', cashBackString: '', backgroundImageUrl: null },
-  sections: [{ tag: 'KNOWN', section: { tag: 'FEATURED_STORES', stores: [] } }],
-  featuredStores: [],
-  additionalStores: null
+  sections: [{ tag: 'KNOWN', section: { tag: 'FEATURED_STORES', stores: [] } }]
   // featuredDeals: [],
 }
 

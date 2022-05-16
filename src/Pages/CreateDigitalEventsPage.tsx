@@ -68,9 +68,7 @@ export const DigitalEventsPage: React.FC<{}> = ({ }) => {
 
 const AllSections: React.FC<{}> = ({ }) => {
   const dispatch = useDispatch<Dispatch>()
-  const additionalStoresSection = useSelector((s: RootState) => s.editModel.de.content.additionalStores)
   const id = useCurId()
-  const showSuccess = useSelector((s: RootState) => s.editModel.showSuccess)
   const isLoading = useSelector((s: RootState) => s.editModel.isFetching)
 
   React.useEffect(() => {
