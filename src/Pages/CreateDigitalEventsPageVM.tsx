@@ -90,39 +90,21 @@ export const editModel = createModel<RootModel>()({
       return withUpdate
     },
     addFeaturedStore(state, payload: AJStore) {
-      return deSectionsL.modify(ss => {
-        return ss.map(s => {
+      return deSectionsL.modify(sections => {
+        return sections.map(s => {
           const lnz = Modelenz.featuredStoresP.composeLens(Lens.fromProp<FeaturedStoresSection>()('stores'))
           return lnz.modify(ss => ([...ss, payload]))(s)
         })
       })(state)
     },
     removeFeaturedStore(state, payload: string) {
-      const withModSections = deSectionsFeaturedStoresStoresL.modify(
-        ss => pipe(ss, A.filter(s => s.url_slug != payload))
-      )(state)
-
-
-      return pipe(
-        state,
-        deFeaturedStoresL.modify(ss => ss.filter(s => s.url_slug != payload)),
-        deSectionsFeaturedStoresStoresL.modify(ss => ss.filter(s => s.url_slug != payload))
-      )
+      return deSectionsL.modify(sections => {
+        return sections.map(section => {
+          const lnz = Modelenz.featuredStoresP.composeLens(Lens.fromProp<FeaturedStoresSection>()('stores'))
+          return lnz.modify(ss => ss.filter(s => s.url_slug != payload))(section)
+        })
+      })(state)
     },
-    // addFeaturedDeal(state, payload: Deal) {
-    //   const withNewForm = produce(state.de.content, draft => {
-    //     draft.featuredDeals.push(payload)
-    //   })
-    //   return { ...state, form: withNewForm }
-    // },
-    // removeFeaturedDeal(state, payload: number) {
-    //   const withRemovedStore = produce(state.de.content.featuredDeals, draft => {
-    //     const index = draft.findIndex(s => s.id === payload)
-    //     if (index !== -1) draft.splice(index, 1)
-    //   })
-    //   return { ...state, form: { ...state.de.content, featuredDeals: withRemovedStore } }
-    // },
-
     addAdditionalStoresSection(state, payload: boolean) {
       if (payload) {
         return deSectionsL.modify(s => ([...s, { tag: 'KNOWN', section: { tag: 'ADDITIONAL_STORES', stores: [] } }]))(state)
@@ -136,7 +118,15 @@ export const editModel = createModel<RootModel>()({
           return lnz.modify(ss => ([...ss, payload]))(s)
         })
       })(state)
-    }
+    },
+    removeAdditionalStore(state, payload: string) {
+      return deSectionsL.modify(sections => {
+        return sections.map(section => {
+          const lnz = Modelenz.additionalStoresP.composeLens(Lens.fromProp<AdditionalStoresSection>()('stores'))
+          return lnz.modify(ss => ss.filter(s => s.url_slug != payload))(section)
+        })
+      })(state)
+    },
   },
   effects: (dispatch) => ({
     async syncDigitalEvent(payload: string, rootState) {

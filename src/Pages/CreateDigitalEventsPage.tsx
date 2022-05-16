@@ -632,7 +632,7 @@ const EditAdditionalStores: React.FC<{ section: AdditionalStoresSection }> = ({ 
         <AJStoreDnD
           stores={stores}
           onRemove={(slug) => {
-            dispatch.editModel.removeFeaturedStore(slug)
+            dispatch.editModel.removeAdditionalStore(slug)
           }}
         />
         {/* {stores.map(s => (
