@@ -1,5 +1,8 @@
 {
   "projects": {
-    "default": "admin-28c93"
-  }
+    "default": "admin-28c93",
+    "staging": "admin-stage-8a823",
+    "prod": "admin-28c93"
+  },
+  "targets": {}
 }

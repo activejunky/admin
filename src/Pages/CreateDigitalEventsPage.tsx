@@ -1,4 +1,3 @@
-import { pipe } from 'fp-ts/lib/function'
 import * as O from 'fp-ts/Option'
 import * as React from 'react'
 import EdiText from 'react-editext'
@@ -6,12 +5,11 @@ import LoadingOverlay from 'react-loading-overlay-ts'
 import Modal from 'react-modal'
 import { Provider, useDispatch, useSelector } from "react-redux"
 import { useLocation, useParams } from 'react-router-dom'
-import Select from "react-select"
 import Async from 'react-select/async'
 import { toast, ToastContainer } from 'react-toastify'
 import 'react-toastify/dist/ReactToastify.css'
 import { Backend, s3BaseUrl } from '../Backend/Api'
-import { AdditionalStoresSection, AJStore, FeaturedStoresSection, featuredStoresSectionT, HeadlessDigitalEvent, isAdditionalStoresSection, isFeaturedStoresSection, isKnownSection, knownSectionT, Section } from '../Models'
+import { AdditionalStoresSection, AJStore, FeaturedDealsSection, HeadlessDigitalEvent, isAdditionalStoresSection, isFeaturedDealsSection, isKnownSection } from '../Models'
 import { AJStoreDnD } from './CreateDigitalEvents/ItemSorter'
 import { Dispatch, RootState, store } from './CreateDigitalEventsPageVM'
 
@@ -127,10 +125,10 @@ const CmsSections: React.FC<{}> = ({ }) => {
           //   return <div>Featured! {s.section.stores.map(s => s.name).join(',')}</div>
           // }
 
-          if (isFeaturedStoresSection(s.section)) {
+          if (isFeaturedDealsSection(s.section)) {
             return (
               <SectionContainer>
-                <EditFeaturedStores section={s.section} />
+                <EditFeaturedDeals section={s.section} />
               </SectionContainer>
             )
           }
@@ -328,17 +326,12 @@ const EditBanner: React.FC<{ mbInitialDE?: HeadlessDigitalEvent }> = ({ mbInitia
 }
 
 
-async function loadStoreOptions(p: { searchTerms: string }) {
-  const stores = await Backend.getStores(p)
-  return stores.map(s => ({ label: s.name, value: s.url_slug }))
-}
-
-const EditFeaturedStores: React.FC<{ section: FeaturedStoresSection }> = ({ section }) => {
+const EditFeaturedDeals: React.FC<{ section: FeaturedDealsSection }> = ({ section }) => {
   const [isShowingModal, setIsShowingModal] = React.useState(false)
   const [mbAvailableStores, setMbStores] = React.useState<null | AJStore[]>(null)
-  const [selectedStore, setSelectedStore] = React.useState<null | string>()
-  const stores = section.stores
+  const [inputDealId, setDealId] = React.useState<null | number>()
   const dispatch = useDispatch<Dispatch>()
+  const dealIds = section.dealIds
 
 
   function openModal() {
@@ -354,36 +347,46 @@ const EditFeaturedStores: React.FC<{ section: FeaturedStoresSection }> = ({ sect
     setIsShowingModal(false);
   }
 
-  const onAdd = React.useCallback((storeSlug: string) => {
-    console.log("MB STORES! ", mbAvailableStores)
-    if (mbAvailableStores) {
-      const newStore = mbAvailableStores.find(s => s.url_slug == storeSlug)!
-      console.log("NEW STORE! ", newStore)
-      dispatch.editModel.addFeaturedStore(newStore)
+  const onAdd = React.useCallback(() => {
+    console.log("MB DEAL ID! ", inputDealId)
+    if (inputDealId) {
+      dispatch.editModel.addFeaturedDealId(inputDealId)
       setIsShowingModal(false)
     }
-  }, [mbAvailableStores])
+  }, [inputDealId])
+
+  const onInputDealId = (evt: React.FormEvent<HTMLInputElement>) => {
+    evt.preventDefault()
+    const mbNumber = parseInt(evt.currentTarget.value)
+    if (mbNumber) {
+      setDealId(mbNumber)
+    }
+  }
 
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', marginTop: 30 }}>
       <div style={{ display: 'flex', marginBottom: 20 }}>
-        <h3 className="text-2xl font-bold">Featured Stores</h3>
-        <OutlineButton title="Add Store" onClick={openModal} />
+        <h3 className="text-2xl font-bold">Featured Deals</h3>
+        <OutlineButton title="Add Featured Deal" onClick={openModal} />
       </div>
 
 
       <div style={{ display: 'flex', flexDirection: 'row' }}>
-
-        <AJStoreDnD
+        {dealIds.map(did => {
+          return (
+            <div className="border flex justify-center items-center mr-4 flex-col" style={{ width: 100, height: 200 }} key={did}>
+              {did}
+              <button style={{ marginTop: 8 }} onClick={() => { dispatch.editModel.removeFeaturedDealId(did) }}>X</button>
+            </div>
+          )
+        })}
+        {/* <AJStoreDnD
           stores={stores}
           onRemove={(slug) => {
             dispatch.editModel.removeFeaturedStore(slug)
           }}
-        />
-        {/* {stores.map(s => (
-          <StoreIcon ajStore={s} onRemove={() => { dispatch.editModel.removeFeaturedStore(s.url_slug) }} />
-        ))} */}
+        /> */}
 
 
       </div>
@@ -395,13 +398,26 @@ const EditFeaturedStores: React.FC<{ section: FeaturedStoresSection }> = ({ sect
         style={customStyles}
         contentLabel="Example Modal"
       >
-        <SearchAndAddStoreModalContent
+        <div className="flex flex-col justify-center items-center w-full h-full" style={{ border: '1px solid black', display: 'flex' }}>
+          <input
+            type="text" title='DealId' placeholder='deal Id'
+            style={{ border: '1px solid black', width: '25%', height: 80 }}
+            onChange={onInputDealId}
+          />
+          <button
+            className="w-4/6 rounded bg-blue-500 hover:bg-blue-300 text-white py-2 px-4 mt-4"
+            onClick={onAdd}
+          >
+            Add
+          </button>
+        </div>
+        {/* <SearchAndAddStoreModalContent
           closeModal={closeModal}
-          onChange={p => { setSelectedStore(p?.value) }}
+          onChange={p => { setDealId(p?.value) }}
           setMatchingStores={setMbStores}
           onAdd={onAdd}
-          selectedStoreSlug={selectedStore}
-        />
+          selectedStoreSlug={inputDealId}
+        /> */}
       </Modal>
     </div>
   )
@@ -462,13 +478,6 @@ const SearchAndAddStoreModalContent: React.FC<SearchAndAddStoreModalContentProps
   )
 }
 
-const StoreIcon: React.FC<{ ajStore: AJStore, onRemove: () => void }> = ({ ajStore, onRemove }) => (
-  <div style={{ width: 100, height: 200, border: '1px solid black', marginRight: 20, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
-    {ajStore.name}
-    <img src={ajStore.image_url} style={{ width: 20, height: 20 }} />
-    <button onClick={onRemove}>X</button>
-  </div>
-)
 
 
 // const EditFeaturedDeals: React.FC<{}> = ({ }) => {

@@ -42,12 +42,12 @@ const bannerContentT = iots.type({
 })
 export type BannerContent = iots.TypeOf<typeof bannerContentT>
 
-export const featuredStoresSectionT = iots.type({
-  tag: iots.literal('FEATURED_STORES'),
-  stores: iots.array(ajStoreT)
+export const featuredDealsSectionT = iots.type({
+  tag: iots.literal('FEATURED_DEALS'),
+  dealIds: iots.array(iots.number)
 })
 
-export type FeaturedStoresSection = iots.TypeOf<typeof featuredStoresSectionT>
+export type FeaturedDealsSection = iots.TypeOf<typeof featuredDealsSectionT>
 
 export const additionalStoresSectionT = iots.type({
   tag: iots.literal('ADDITIONAL_STORES'),
@@ -57,7 +57,7 @@ export const additionalStoresSectionT = iots.type({
 
 export type AdditionalStoresSection = iots.TypeOf<typeof additionalStoresSectionT>
 
-export const knownSectionSectionT = iots.union([featuredStoresSectionT, additionalStoresSectionT])
+export const knownSectionSectionT = iots.union([featuredDealsSectionT, additionalStoresSectionT])
 export type KnownSectionSection = iots.TypeOf<typeof knownSectionSectionT>
 
 export const knownSectionT = iots.type({
@@ -65,8 +65,8 @@ export const knownSectionT = iots.type({
   section: knownSectionSectionT
 })
 
-export function isFeaturedStoresSection(kss: KnownSectionSection): kss is FeaturedStoresSection {
-  return kss.tag === 'FEATURED_STORES'
+export function isFeaturedDealsSection(kss: KnownSectionSection): kss is FeaturedDealsSection {
+  return kss.tag === 'FEATURED_DEALS'
 }
 
 export function isAdditionalStoresSection(kss: KnownSectionSection): kss is AdditionalStoresSection {
@@ -91,21 +91,6 @@ export function typeFilter<T, R extends T>(a: T[], f: (e: T) => e is R): R[] {
   return r;
 }
 
-export function ModifySection(section: Section) {
-  function appendFeaturedStore(newStore: AJStore): Section {
-    if (knownSectionT.is(section) && featuredStoresSectionT.is(section.section)) {
-      const withNewStore: AJStore[] = [...section.section.stores, newStore]
-      const fs: FeaturedStoresSection = { ...section.section, stores: withNewStore }
-      return { ...section, section: fs }
-    }
-
-    return section
-  }
-
-  return {
-    appendFeaturedStore
-  }
-}
 
 const headlessDigitalEventContentT = iots.type({
   pageTitle: iots.string,
@@ -146,20 +131,19 @@ export module Modelenz {
   export const bannerL = Lens.fromProp<HeadlessDigitalEventContent>()('banner')
   export const sectionsL = Lens.fromProp<HeadlessDigitalEventContent>()('sections') as unknown as Lens<HeadlessDigitalEventContent, readonly Section[]>
   const eachSectionsTraversable = fromTraversable(A.array)<Section>()
-  const eachSections = eachSectionsTraversable.asFold()
 
-  export const firstFeaturedStoreSectionP = new Prism<readonly Section[], FeaturedStoresSection>(
+  export const firstFeaturedStoreSectionP = new Prism<readonly Section[], FeaturedDealsSection>(
     (ss) => {
       const kss = pipe(ss, AR.filter(isKnownSection))
-      const fss: readonly FeaturedStoresSection[] = pipe(kss, AR.map(ks => ks.section), AR.filter(isFeaturedStoresSection))
+      const fss: readonly FeaturedDealsSection[] = pipe(kss, AR.map(ks => ks.section), AR.filter(isFeaturedDealsSection))
       return AR.head(fss)
     },
     fs => [{ tag: 'KNOWN', section: fs }]
   )
 
-  export const featuredStoresP = new Prism<Section, FeaturedStoresSection>(
+  export const featuredDealsP = new Prism<Section, FeaturedDealsSection>(
     s => {
-      if (isKnownSection(s) && isFeaturedStoresSection(s.section)) {
+      if (isKnownSection(s) && isFeaturedDealsSection(s.section)) {
         return O.some(s.section)
       }
       return O.none

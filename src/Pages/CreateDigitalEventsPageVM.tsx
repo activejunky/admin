@@ -1,17 +1,14 @@
 import { createModel, init, Models, RematchDispatch, RematchRootState } from '@rematch/core'
 import immerPlugin from '@rematch/immer'
 import createSelectPlugin from '@rematch/select'
-import * as A from 'fp-ts/Array'
 import { pipe } from 'fp-ts/lib/function'
 import * as O from 'fp-ts/Option'
-import { lens, Lens } from 'monocle-ts'
+import * as ROA from 'fp-ts/ReadonlyArray'
+import { Lens } from 'monocle-ts'
 import * as Op from 'monocle-ts/lib/Optional'
 import createCachedSelector from 're-reselect'
 import { Backend } from '../Backend/Api'
-import { AdditionalStoresSection, AJStore, FeaturedStoresSection, HeadlessDigitalEvent, HeadlessDigitalEventContent, HeadlessDigitalEventResponseObj, isAdditionalStoresSection, isKnownSection, Modelenz, Section } from '../Models'
-import * as ROA from 'fp-ts/ReadonlyArray'
-import { dropAt } from 'fp-ts-std/ReadonlyArray'
-import { boolean } from 'fp-ts-std'
+import { AdditionalStoresSection, AJStore, FeaturedDealsSection, HeadlessDigitalEvent, HeadlessDigitalEventContent, HeadlessDigitalEventResponseObj, isAdditionalStoresSection, isKnownSection, Modelenz, Section } from '../Models'
 
 export type PageState = {
   de: HeadlessDigitalEvent
@@ -29,7 +26,7 @@ const deSectionsL = deContentL.compose(Lens.fromProp<HeadlessDigitalEventContent
 export const emptyFormState: HeadlessDigitalEventContent = {
   pageTitle: '',
   banner: { title: '', cashBackString: '', backgroundImageUrl: null },
-  sections: [{ tag: 'KNOWN', section: { tag: 'FEATURED_STORES', stores: [] } }]
+  sections: [{ tag: 'KNOWN', section: { tag: 'FEATURED_DEALS', dealIds: [] } }]
   // featuredDeals: [],
 }
 
@@ -85,19 +82,19 @@ export const editModel = createModel<RootModel>()({
       const withUpdate = indexL.set(payload.section)(state)
       return withUpdate
     },
-    addFeaturedStore(state, payload: AJStore) {
+    addFeaturedDealId(state, payload: number) {
       return deSectionsL.modify(sections => {
         return sections.map(s => {
-          const lnz = Modelenz.featuredStoresP.composeLens(Lens.fromProp<FeaturedStoresSection>()('stores'))
-          return lnz.modify(ss => ([...ss, payload]))(s)
+          const lnz = Modelenz.featuredDealsP.composeLens(Lens.fromProp<FeaturedDealsSection>()('dealIds'))
+          return lnz.modify(dids => ([...dids, payload]))(s)
         })
       })(state)
     },
-    removeFeaturedStore(state, payload: string) {
+    removeFeaturedDealId(state, payload: number) {
       return deSectionsL.modify(sections => {
         return sections.map(section => {
-          const lnz = Modelenz.featuredStoresP.composeLens(Lens.fromProp<FeaturedStoresSection>()('stores'))
-          return lnz.modify(ss => ss.filter(s => s.url_slug != payload))(section)
+          const lnz = Modelenz.featuredDealsP.composeLens(Lens.fromProp<FeaturedDealsSection>()('dealIds'))
+          return lnz.modify(ss => ss.filter(s => s !== payload))(section)
         })
       })(state)
     },
