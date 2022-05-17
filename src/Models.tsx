@@ -12,6 +12,7 @@ import { pipe } from "fp-ts/lib/function"
 import * as L from 'monocle-ts/Lens'
 import * as Trav from 'monocle-ts/Traversal'
 import * as iots from 'io-ts'
+import * as iotst from 'io-ts-types'
 import * as AR from 'fp-ts/ReadonlyArray'
 
 
@@ -105,6 +106,11 @@ export function ModifySection(section: Section) {
   }
 }
 
+const headlessDigitalEventContentT = iots.type({
+  pageTitle: iots.string,
+  banner: bannerContentT,
+  sections: iots.array(sectionT)
+})
 export type HeadlessDigitalEventContent = {
   pageTitle: string
   banner: BannerContent
@@ -122,14 +128,17 @@ export interface HeadlessDigitalEvent {
   content: HeadlessDigitalEventContent
 }
 
-export interface HeadlessDigitalEventResponseObj {
-  id: string
-  title: string
-  last_saved_at: string | null
-  last_published_at: string | null
-  content: HeadlessDigitalEventContent | null
-}
 
+
+export const headlessDigitalEventResponseObjT = iots.type({
+  id: iots.string,
+  title: iots.string,
+  last_saved_at: iots.union([iots.string, iots.null]),
+  last_published_at: iots.union([iots.string, iots.null]),
+  content: iots.union([headlessDigitalEventContentT, iots.null])
+})
+
+export type HeadlessDigitalEventResponseObj = iots.TypeOf<typeof headlessDigitalEventResponseObjT>
 
 export module Modelenz {
   export const contentL = Lens.fromProp<HeadlessDigitalEvent>()('content')

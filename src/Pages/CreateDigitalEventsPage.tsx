@@ -203,9 +203,9 @@ const ControlPanel: React.FC<{}> = ({ }) => {
         <button className="bg-orange-500 text-white py-2 px-4" onClick={() => { onPublishDraft() }}>Publish</button>
       </div>
 
-      <div style={{ width: '100%', position: 'absolute', left: 0, top: 0, bottom: 0, display: 'flex', alignItems: 'flex-end', flexDirection: 'column' }}>
+      <div style={{ width: '200px', position: 'absolute', right: 0, top: 0, bottom: 0, display: 'flex', alignItems: 'flex-end', flexDirection: 'column' }}>
         <div>Last saved at: </div>
-        <div>{de.last_saved_at}</div>
+        <div>{de.last_saved_at ? (new Date(de.last_saved_at).toString()) : ""}</div>
       </div>
     </div>
   )

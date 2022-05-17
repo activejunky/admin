@@ -21,6 +21,7 @@
     "fp-ts-std": "^0.14.2",
     "immer": "^9.0.12",
     "io-ts": "^2.2.16",
+    "io-ts-types": "^0.5.16",
     "monocle-ts": "^2.3.13",
     "observable-hooks": "^4.2.0",
     "picnic": "^7.1.0",

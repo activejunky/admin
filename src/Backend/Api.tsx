@@ -1,5 +1,9 @@
 import { head } from "fp-ts/lib/ReadonlyNonEmptyArray"
-import { AJStore, Deal, HeadlessDigitalEvent, HeadlessDigitalEventResponseObj } from "../Models"
+import { AJStore, Deal, HeadlessDigitalEvent, HeadlessDigitalEventResponseObj, headlessDigitalEventResponseObjT } from "../Models"
+import * as E from 'fp-ts/Either'
+import { PathReporter } from 'io-ts/PathReporter'
+import * as iotst from 'io-ts-types'
+
 
 export const baseUrl = process.env.REACT_APP_API_BASE_URL
 
@@ -81,11 +85,17 @@ async function allDigitalEvents() {
   return j
 }
 
-async function digitalEvent(id: string) {
+async function getDigitalEvent(id: string) {
   const r = await fetch(hdept(`${id}.json`))
-  const j: HeadlessDigitalEventResponseObj = await r.json()
-  console.log("RESULT OF GETTING DIGITAL EVENT! ", r.status, JSON.stringify(j))
-  return j
+  const j = await r.json()
+  const ehde = headlessDigitalEventResponseObjT.decode(j)
+  if (E.isRight(ehde)) {
+    return ehde.right
+  } else {
+    console.log("E! ", ehde.left)
+    console.log("PATH ERROR! ", PathReporter.report(ehde))
+    throw new Error('Failed to decode digital event')
+  }
 }
 
 async function putToS3(fileObject: any, presignedUrl: string) {
@@ -127,7 +137,7 @@ export const Backend = {
   publishDraft,
   saveDraft,
   allDigitalEvents,
-  digitalEvent,
+  digitalEvent: getDigitalEvent,
   fetchHomePage,
   getStores: searchStores,
 
