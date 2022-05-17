@@ -51,6 +51,7 @@ export type FeaturedStoresSection = iots.TypeOf<typeof featuredStoresSectionT>
 
 export const additionalStoresSectionT = iots.type({
   tag: iots.literal('ADDITIONAL_STORES'),
+  title: iots.string,
   stores: iots.array(ajStoreT)
 })
 

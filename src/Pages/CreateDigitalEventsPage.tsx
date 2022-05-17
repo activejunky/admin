@@ -628,10 +628,19 @@ const EditAdditionalStores: React.FC<{ section: AdditionalStoresSection }> = ({ 
     }
   }, [mbStores])
 
+  const handleSave = (va: string) => {
+    dispatch.editModel.setAdditionalStoresSectionTitle(va)
+  }
+
   return (
     <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', marginTop: 30 }}>
+      <div style={{ width: '100%', display: 'flex', alignItems: 'center', marginBottom: 30 }}>
+        <h3 className="text-1xl font-bold" style={{ marginRight: 18 }}>Title</h3>
+        <EdiText type="text" value={section.title} onSave={(val) => { handleSave(val) }} />
+      </div>
+
       <div style={{ display: 'flex', marginBottom: 20 }}>
-        <h3 className="text-2xl font-bold">Additional Stores</h3>
+        <h3 className="text-1xl font-bold">Stores</h3>
         <OutlineButton title="Add Store" onClick={openModal} />
       </div>
 

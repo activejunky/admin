@@ -11,6 +11,7 @@ import { Backend } from '../Backend/Api'
 import { AdditionalStoresSection, AJStore, FeaturedStoresSection, HeadlessDigitalEvent, HeadlessDigitalEventContent, HeadlessDigitalEventResponseObj, isAdditionalStoresSection, isKnownSection, Modelenz, Section } from '../Models'
 import * as ROA from 'fp-ts/ReadonlyArray'
 import { dropAt } from 'fp-ts-std/ReadonlyArray'
+import { boolean } from 'fp-ts-std'
 
 export type PageState = {
   de: HeadlessDigitalEvent
@@ -102,9 +103,17 @@ export const editModel = createModel<RootModel>()({
     },
     addAdditionalStoresSection(state, payload: boolean) {
       if (payload) {
-        return deSectionsL.modify(s => ([...s, { tag: 'KNOWN', section: { tag: 'ADDITIONAL_STORES', stores: [] } }]))(state)
+        return deSectionsL.modify(s => ([...s, { tag: 'KNOWN', section: { tag: 'ADDITIONAL_STORES', title: '', stores: [] } }]))(state)
       }
       return deSectionsL.modify(ss => pipe(ss, ROA.filter(s => !(isKnownSection(s) && isAdditionalStoresSection(s.section)))))(state)
+    },
+    setAdditionalStoresSectionTitle(state, payload: string) {
+      return deSectionsL.modify(ss => {
+        return ss.map(s => {
+          const lnz = Modelenz.additionalStoresP.composeLens(Lens.fromProp<AdditionalStoresSection>()('title'))
+          return lnz.set(payload)(s)
+        })
+      })(state)
     },
     addAdditionalStore(state, payload: AJStore) {
       return deSectionsL.modify(ss => {
