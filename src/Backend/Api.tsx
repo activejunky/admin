@@ -14,7 +14,7 @@ function endpt(ep: string): string {
   return `${baseUrl}/${ep}`
 }
 
-const HDE = 'headless_digital_events'
+const HDE = 'cms/headless_digital_events'
 
 function hdept(ep: string): string {
   return endpt(`${HDE}/${ep}`)
