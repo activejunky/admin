@@ -14,6 +14,7 @@ import * as Trav from 'monocle-ts/Traversal'
 import * as iots from 'io-ts'
 import * as iotst from 'io-ts-types'
 import * as AR from 'fp-ts/ReadonlyArray'
+import { number } from "fp-ts-std"
 
 
 const ajStoreT = iots.type({
@@ -25,25 +26,15 @@ const ajStoreT = iots.type({
 
 export type AJStore = iots.TypeOf<typeof ajStoreT>
 
-export type Deal = {
-  readonly _tag: "Deal",
-  readonly id: number,
-  readonly title: string,
-  readonly description: string,
-  readonly store: AJStore,
-  readonly expires: string,
-  readonly deal_code: string,
-}
-
-export const dealResultT = iots.type({
+export const dealT = iots.type({
   id: iots.number,
-  image_url: iots.string,
-  name: iots.string,
-  url_slug: iots.string,
-  default_cashback: iots.number
+  title: iots.string,
+  description: iots.string,
+  deal_code: iots.string,
+  store: ajStoreT
 })
 
-export type DealResult = iots.TypeOf<typeof dealResultT>
+export type Deal = iots.TypeOf<typeof dealT>
 
 const bannerContentT = iots.type({
   title: iots.string,
@@ -54,8 +45,7 @@ export type BannerContent = iots.TypeOf<typeof bannerContentT>
 
 export const featuredDealsSectionT = iots.type({
   tag: iots.literal('FEATURED_DEALS'),
-  dealIds: iots.array(iots.number),
-  deals: iots.array(dealResultT)
+  deals: iots.array(dealT)
 })
 
 export type FeaturedDealsSection = iots.TypeOf<typeof featuredDealsSectionT>

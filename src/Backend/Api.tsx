@@ -1,5 +1,5 @@
 import { head } from "fp-ts/lib/ReadonlyNonEmptyArray"
-import { AJStore, Deal, DealResult, dealResultT, HeadlessDigitalEvent, HeadlessDigitalEventResponseObj, headlessDigitalEventResponseObjT } from "../Models"
+import { AJStore, Deal, dealT, HeadlessDigitalEvent, HeadlessDigitalEventResponseObj, headlessDigitalEventResponseObjT } from "../Models"
 import * as E from 'fp-ts/Either'
 import { PathReporter } from 'io-ts/PathReporter'
 import * as iotst from 'io-ts-types'
@@ -56,11 +56,11 @@ async function searchStores(p: { searchTerms: string }): Promise<AJStore[]> {
 }
 
 const searchDealsResultT = iots.type({
-  results: iots.array(dealResultT)
+  results: iots.array(dealT)
 })
 
-async function searchDeals(p: { searchTerms: string }): Promise<DealResult[]> {
-  const url = endpt(`api/search/stores.json?search_terms=${p.searchTerms}`)
+async function searchDeals(p: { searchTerms: string }): Promise<Deal[]> {
+  const url = endpt(`api/search/deals.json?search_terms=${p.searchTerms}`)
   const r = await fetch(url)
   const j = await r.json()
   const dr = searchDealsResultT.decode(j)
