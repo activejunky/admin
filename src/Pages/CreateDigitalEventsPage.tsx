@@ -9,7 +9,7 @@ import Async from 'react-select/async'
 import { toast, ToastContainer } from 'react-toastify'
 import 'react-toastify/dist/ReactToastify.css'
 import { Backend, s3BaseUrl } from '../Backend/Api'
-import { AdditionalStoresSection, AJStore, Deal, DealResult, FeaturedDealsSection, HeadlessDigitalEvent, isAdditionalStoresSection, isFeaturedDealsSection, isKnownSection } from '../Models'
+import { AdditionalStoresSection, AJStore, Deal, DealResult, dealResultT, FeaturedDealsSection, HeadlessDigitalEvent, isAdditionalStoresSection, isFeaturedDealsSection, isKnownSection } from '../Models'
 import { AJStoreDnD } from './CreateDigitalEvents/ItemSorter'
 import { Dispatch, RootState, store } from './CreateDigitalEventsPageVM'
 
@@ -328,20 +328,14 @@ const EditBanner: React.FC<{ mbInitialDE?: HeadlessDigitalEvent }> = ({ mbInitia
 
 const EditFeaturedDeals: React.FC<{ section: FeaturedDealsSection }> = ({ section }) => {
   const [isShowingModal, setIsShowingModal] = React.useState(false)
-  const [mbAvailableStores, setMbStores] = React.useState<null | AJStore[]>(null)
-  const [inputDealId, setDealId] = React.useState<null | number>()
-  const [matchingDeals, setMatchingDeals] = React.useState<null | DealResult[]>(null)
+  const [inputDeal, setSelectedDeal] = React.useState<null | DealResult>()
+  const [matchingDeals, setMatchingDeals] = React.useState<null | DealResult[]>()
   const dispatch = useDispatch<Dispatch>()
-  const dealIds = section.dealIds
+  const deals = section.deals
 
 
   function openModal() {
     setIsShowingModal(true);
-    Backend.getStores({ searchTerms: '' }).then(s => {
-      setMbStores(s)
-    }).catch(e => {
-      console.log("FAILED TO GET STORES! ", e)
-    })
   }
 
   function closeModal() {
@@ -349,23 +343,20 @@ const EditFeaturedDeals: React.FC<{ section: FeaturedDealsSection }> = ({ sectio
   }
 
   const onAdd = React.useCallback(() => {
-    console.log("MB DEAL ID! ", inputDealId)
-    if (inputDealId) {
-      dispatch.editModel.addFeaturedDealId(inputDealId)
+    console.log("MB DEAL! ", inputDeal)
+    if (inputDeal) {
+      dispatch.editModel.addFeaturedDeal(inputDeal)
       setIsShowingModal(false)
-      Backend.getDeal({ dealId: inputDealId }).then(r => {
-
-      }).catch(e => console.error(e))
     }
-  }, [inputDealId])
+  }, [inputDeal])
 
-  const onInputDealId = (evt: React.FormEvent<HTMLInputElement>) => {
-    evt.preventDefault()
-    const mbNumber = parseInt(evt.currentTarget.value)
-    if (mbNumber) {
-      setDealId(mbNumber)
-    }
-  }
+  // const onInputDealId = (evt: React.FormEvent<HTMLInputElement>) => {
+  //   evt.preventDefault()
+  //   const mbNumber = parseInt(evt.currentTarget.value)
+  //   if (mbNumber) {
+  //     setDealId(mbNumber)
+  //   }
+  // }
 
 
 
@@ -378,11 +369,14 @@ const EditFeaturedDeals: React.FC<{ section: FeaturedDealsSection }> = ({ sectio
 
 
       <div style={{ display: 'flex', flexDirection: 'row' }}>
-        {dealIds.map(did => {
+        {deals.map(d => {
           return (
-            <div className="border flex justify-center items-center mr-4 flex-col" style={{ width: 100, height: 200 }} key={did}>
-              {did}
-              <button style={{ marginTop: 8 }} onClick={() => { dispatch.editModel.removeFeaturedDealId(did) }}>X</button>
+            <div className="border flex justify-center items-center mr-4 flex-col" style={{ width: 100, height: 200 }} key={d.id}>
+              {`${d.url_slug} - ${d.id}`}
+              <img src={d.image_url} style={{ width: 30, height: 30 }} />
+              <button style={{ marginTop: 8 }} onClick={() => { dispatch.editModel.removeFeaturedDeal(d) }}>
+                X
+              </button>
             </div>
           )
         })}
@@ -411,7 +405,11 @@ const EditFeaturedDeals: React.FC<{ section: FeaturedDealsSection }> = ({ sectio
             onChange={p => {
               console.log("P! ", p)
               if (p) {
-                setDealId(p.value)
+                const md = matchingDeals?.find(md => md.id === p.value)
+                console.log("MD! ", md)
+                if (md) {
+                  setSelectedDeal(md)
+                }
               }
             }}
             formatOptionLabel={({ value, label }) => (
@@ -431,12 +429,12 @@ const EditFeaturedDeals: React.FC<{ section: FeaturedDealsSection }> = ({ sectio
             }}
           // defaultOptions={mbStores.map(s => ({ value: s.url_slug, label: s.name }))}
           />
-          <input
+          {/* <input
             type="text" title='DealId' placeholder='deal Id'
             value={inputDealId?.toString() ?? ""}
             style={{ border: '1px solid black', width: '25%', height: 80 }}
             onChange={onInputDealId}
-          />
+          /> */}
           <button
             className="w-4/6 rounded bg-blue-500 hover:bg-blue-300 text-white py-2 px-4 mt-4"
             onClick={onAdd}

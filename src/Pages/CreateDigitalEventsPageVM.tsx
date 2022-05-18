@@ -8,7 +8,7 @@ import { Lens } from 'monocle-ts'
 import * as Op from 'monocle-ts/lib/Optional'
 import createCachedSelector from 're-reselect'
 import { Backend } from '../Backend/Api'
-import { AdditionalStoresSection, AJStore, FeaturedDealsSection, HeadlessDigitalEvent, HeadlessDigitalEventContent, HeadlessDigitalEventResponseObj, isAdditionalStoresSection, isKnownSection, Modelenz, Section } from '../Models'
+import { AdditionalStoresSection, AJStore, DealResult, FeaturedDealsSection, HeadlessDigitalEvent, HeadlessDigitalEventContent, HeadlessDigitalEventResponseObj, isAdditionalStoresSection, isKnownSection, Modelenz, Section } from '../Models'
 
 export type PageState = {
   de: HeadlessDigitalEvent
@@ -26,7 +26,7 @@ const deSectionsL = deContentL.compose(Lens.fromProp<HeadlessDigitalEventContent
 export const emptyFormState: HeadlessDigitalEventContent = {
   pageTitle: '',
   banner: { title: '', cashBackString: '', backgroundImageUrl: null },
-  sections: [{ tag: 'KNOWN', section: { tag: 'FEATURED_DEALS', dealIds: [] } }]
+  sections: [{ tag: 'KNOWN', section: { tag: 'FEATURED_DEALS', dealIds: [], deals: [] } }]
   // featuredDeals: [],
 }
 
@@ -90,11 +90,27 @@ export const editModel = createModel<RootModel>()({
         })
       })(state)
     },
+    addFeaturedDeal(state, payload: DealResult) {
+      return deSectionsL.modify(sections => {
+        return sections.map(s => {
+          const lnz = Modelenz.featuredDealsP.composeLens(Lens.fromProp<FeaturedDealsSection>()('deals'))
+          return lnz.modify(dids => ([...dids, payload]))(s)
+        })
+      })(state)
+    },
     removeFeaturedDealId(state, payload: number) {
       return deSectionsL.modify(sections => {
         return sections.map(section => {
           const lnz = Modelenz.featuredDealsP.composeLens(Lens.fromProp<FeaturedDealsSection>()('dealIds'))
           return lnz.modify(ss => ss.filter(s => s !== payload))(section)
+        })
+      })(state)
+    },
+    removeFeaturedDeal(state, payload: DealResult) {
+      return deSectionsL.modify(sections => {
+        return sections.map(section => {
+          const lnz = Modelenz.featuredDealsP.composeLens(Lens.fromProp<FeaturedDealsSection>()('deals'))
+          return lnz.modify(ss => ss.filter(s => s.id !== payload.id))(section)
         })
       })(state)
     },

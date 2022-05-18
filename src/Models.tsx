@@ -54,7 +54,8 @@ export type BannerContent = iots.TypeOf<typeof bannerContentT>
 
 export const featuredDealsSectionT = iots.type({
   tag: iots.literal('FEATURED_DEALS'),
-  dealIds: iots.array(iots.number)
+  dealIds: iots.array(iots.number),
+  deals: iots.array(dealResultT)
 })
 
 export type FeaturedDealsSection = iots.TypeOf<typeof featuredDealsSectionT>
