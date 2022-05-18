@@ -35,6 +35,16 @@ export type Deal = {
   readonly deal_code: string,
 }
 
+export const dealResultT = iots.type({
+  id: iots.number,
+  image_url: iots.string,
+  name: iots.string,
+  url_slug: iots.string,
+  default_cashback: iots.number
+})
+
+export type DealResult = iots.TypeOf<typeof dealResultT>
+
 const bannerContentT = iots.type({
   title: iots.string,
   cashBackString: iots.string,

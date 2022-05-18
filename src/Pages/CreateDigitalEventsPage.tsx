@@ -9,7 +9,7 @@ import Async from 'react-select/async'
 import { toast, ToastContainer } from 'react-toastify'
 import 'react-toastify/dist/ReactToastify.css'
 import { Backend, s3BaseUrl } from '../Backend/Api'
-import { AdditionalStoresSection, AJStore, FeaturedDealsSection, HeadlessDigitalEvent, isAdditionalStoresSection, isFeaturedDealsSection, isKnownSection } from '../Models'
+import { AdditionalStoresSection, AJStore, Deal, DealResult, FeaturedDealsSection, HeadlessDigitalEvent, isAdditionalStoresSection, isFeaturedDealsSection, isKnownSection } from '../Models'
 import { AJStoreDnD } from './CreateDigitalEvents/ItemSorter'
 import { Dispatch, RootState, store } from './CreateDigitalEventsPageVM'
 
@@ -330,6 +330,7 @@ const EditFeaturedDeals: React.FC<{ section: FeaturedDealsSection }> = ({ sectio
   const [isShowingModal, setIsShowingModal] = React.useState(false)
   const [mbAvailableStores, setMbStores] = React.useState<null | AJStore[]>(null)
   const [inputDealId, setDealId] = React.useState<null | number>()
+  const [matchingDeals, setMatchingDeals] = React.useState<null | DealResult[]>(null)
   const dispatch = useDispatch<Dispatch>()
   const dealIds = section.dealIds
 
@@ -352,6 +353,9 @@ const EditFeaturedDeals: React.FC<{ section: FeaturedDealsSection }> = ({ sectio
     if (inputDealId) {
       dispatch.editModel.addFeaturedDealId(inputDealId)
       setIsShowingModal(false)
+      Backend.getDeal({ dealId: inputDealId }).then(r => {
+
+      }).catch(e => console.error(e))
     }
   }, [inputDealId])
 
@@ -362,6 +366,7 @@ const EditFeaturedDeals: React.FC<{ section: FeaturedDealsSection }> = ({ sectio
       setDealId(mbNumber)
     }
   }
+
 
 
   return (
@@ -398,9 +403,37 @@ const EditFeaturedDeals: React.FC<{ section: FeaturedDealsSection }> = ({ sectio
         style={customStyles}
         contentLabel="Example Modal"
       >
-        <div className="flex flex-col justify-center items-center w-full h-full" style={{ border: '1px solid black', display: 'flex' }}>
+
+
+        <div className="flex flex-col w-full h-full border mt-12" style={{ border: '1px solid black' }}>
+          <Async
+            defaultValue={{ value: 0, label: '' }}
+            onChange={p => {
+              console.log("P! ", p)
+              if (p) {
+                setDealId(p.value)
+              }
+            }}
+            formatOptionLabel={({ value, label }) => (
+              <div style={{ display: "flex", flexDirection: 'column', minWidth: 300 }}>
+                <div>{label}</div>
+              </div>
+            )}
+            loadOptions={v => {
+              async function getAndSet() {
+                console.log("SEARCHING WITH TERM! ", v)
+                const deals = await Backend.searchDeals({ searchTerms: v })
+                console.log("SETTING MATCHING DEALS! ", deals)
+                setMatchingDeals(deals)
+                return deals.map(s => ({ value: s.id, label: `${s.url_slug} - ${s.name} - ${s.default_cashback}% cashback (id: ${s.id})` }))
+              }
+              return getAndSet()
+            }}
+          // defaultOptions={mbStores.map(s => ({ value: s.url_slug, label: s.name }))}
+          />
           <input
             type="text" title='DealId' placeholder='deal Id'
+            value={inputDealId?.toString() ?? ""}
             style={{ border: '1px solid black', width: '25%', height: 80 }}
             onChange={onInputDealId}
           />
@@ -410,6 +443,8 @@ const EditFeaturedDeals: React.FC<{ section: FeaturedDealsSection }> = ({ sectio
           >
             Add
           </button>
+
+
         </div>
         {/* <SearchAndAddStoreModalContent
           closeModal={closeModal}

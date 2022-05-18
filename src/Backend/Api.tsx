@@ -1,8 +1,9 @@
 import { head } from "fp-ts/lib/ReadonlyNonEmptyArray"
-import { AJStore, Deal, HeadlessDigitalEvent, HeadlessDigitalEventResponseObj, headlessDigitalEventResponseObjT } from "../Models"
+import { AJStore, Deal, DealResult, dealResultT, HeadlessDigitalEvent, HeadlessDigitalEventResponseObj, headlessDigitalEventResponseObjT } from "../Models"
 import * as E from 'fp-ts/Either'
 import { PathReporter } from 'io-ts/PathReporter'
 import * as iotst from 'io-ts-types'
+import * as iots from 'io-ts'
 
 
 export const baseUrl = process.env.REACT_APP_API_BASE_URL
@@ -52,6 +53,31 @@ async function searchStores(p: { searchTerms: string }): Promise<AJStore[]> {
   const r = await fetch(url)
   const j: { results: AJStore[] } = await r.json()
   return j.results
+}
+
+const searchDealsResultT = iots.type({
+  results: iots.array(dealResultT)
+})
+
+async function searchDeals(p: { searchTerms: string }): Promise<DealResult[]> {
+  const url = endpt(`api/search/stores.json?search_terms=${p.searchTerms}`)
+  const r = await fetch(url)
+  const j = await r.json()
+  const dr = searchDealsResultT.decode(j)
+  console.log("DR! ", PathReporter.report(dr))
+  if (E.isRight(dr)) {
+    return dr.right.results
+  } else {
+    throw new Error('failed to decode deals')
+  }
+}
+
+async function getDeal(p: { dealId: number }): Promise<Deal> {
+  const url = endpt(`api/v1/deals/${p.dealId}.json`)
+  const r = await fetch(url)
+  console.log("GET DEAL RESULT! ", r.status)
+  const j: Deal = await r.json()
+  return j
 }
 
 async function publishDraft(tkn: string, id: string) {
@@ -140,6 +166,8 @@ export const Backend = {
   digitalEvent: getDigitalEvent,
   fetchHomePage,
   getStores: searchStores,
+  searchDeals,
+  getDeal,
 
   uploadImage
 }
