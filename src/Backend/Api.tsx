@@ -73,7 +73,8 @@ async function searchDeals(p: { searchTerms: string }): Promise<Deal[]> {
 }
 
 async function getDeal(p: { dealId: number }): Promise<Deal> {
-  const url = endpt(`api/v1/deals/${p.dealId}.json`)
+  // const url = endpt(`api/v1/deals/${p.dealId}`)
+  const url = endpt(`api/deals/${p.dealId}`)
   const r = await fetch(url)
   console.log("GET DEAL RESULT! ", r.status)
   const j: Deal = await r.json()

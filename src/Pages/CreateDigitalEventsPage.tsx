@@ -72,6 +72,10 @@ const AllSections: React.FC<{}> = ({ }) => {
 
   React.useEffect(() => {
     dispatch.editModel.syncDigitalEvent(id)
+
+    Backend.getDeal({ dealId: 96371 }).then(r => {
+      console.log(`RESULT OF GETTING DEAL ${JSON.stringify(r)}`)
+    })
   }, [])
 
   return (
@@ -418,10 +422,10 @@ const EditFeaturedDeals: React.FC<{ section: FeaturedDealsSection }> = ({ sectio
             loadOptions={v => {
               async function getAndSet() {
                 console.log("SEARCHING WITH TERM! ", v)
-                const deals = await Backend.searchDeals({ searchTerms: v })
+                const mbDeal: Deal | null = await Backend.getDeal({ dealId: parseInt(v) })
                 console.log("SETTING MATCHING DEALS! ", deals)
-                setMatchingDeals(deals)
-                return deals.map(s => ({ value: s.id, label: `${s.title} - ${s.store.name}` }))
+                setMatchingDeals([mbDeal])
+                return [mbDeal].map(s => ({ value: s.id, label: `${s.title} - ${s.store.name}` }))
               }
               return getAndSet()
             }}
