@@ -8,10 +8,12 @@ import { useLocation, useParams } from 'react-router-dom'
 import Async from 'react-select/async'
 import { toast, ToastContainer } from 'react-toastify'
 import 'react-toastify/dist/ReactToastify.css'
-import { Backend, s3BaseUrl } from '../Backend/Api'
+import { Backend, baseUrl, s3BaseUrl } from '../Backend/Api'
 import { AdditionalStoresSection, AJStore, Deal, FeaturedDealsSection, HeadlessDigitalEvent, isAdditionalStoresSection, isFeaturedDealsSection, isKnownSection } from '../Models'
 import { AJStoreDnD } from './CreateDigitalEvents/ItemSorter'
 import { Dispatch, RootState, store } from './CreateDigitalEventsPageVM'
+import { CopyToClipboard } from 'react-copy-to-clipboard';
+import { boolean } from 'fp-ts'
 
 const customStyles = {
   content: {
@@ -48,6 +50,7 @@ function useBearerTkn() {
 
 export const DigitalEventsPage: React.FC<{}> = ({ }) => {
   const { id } = useParams()
+  const [isCopiedToClip, setCopyToClip] = React.useState<{ value: string, copied: boolean }>({ value: id ? deepLink(id) : '', copied: false })
 
   return (
     <div style={{ width: '90vw', height: '100vh', padding: 20 }}>
@@ -57,6 +60,13 @@ export const DigitalEventsPage: React.FC<{}> = ({ }) => {
         <CurIdContext.Provider value={id}>
           {/* <div><Preview /></div> */}
           <ControlPanel />
+          <div style={{ display: 'flex' }}>
+            <input type="text" value={`${isCopiedToClip.value}`} className="border" />
+            <CopyToClipboard text={isCopiedToClip.value}
+              onCopy={() => setCopyToClip(v => ({ ...v, copied: true }))}>
+              <button className='border border-stone-600 rounded-md'>Copy Dynamic link to clipboard</button>
+            </CopyToClipboard>
+          </div>
           <AllSections />
         </CurIdContext.Provider>
       </Provider>
@@ -111,6 +121,10 @@ const AllSections: React.FC<{}> = ({ }) => {
 }
 
 
+function deepLink(id: string): string {
+  return `${baseUrl}/digital_events/${id}`
+}
+
 const CmsSections: React.FC<{}> = ({ }) => {
   const sections = useSelector((rs: RootState) => rs.editModel.de.content.sections)
   const dispatch = useDispatch<Dispatch>()
@@ -151,7 +165,7 @@ const CmsSections: React.FC<{}> = ({ }) => {
         (
 
           <div style={{ width: '100%', display: 'flex', marginTop: 20, marginBottom: 20, height: 30 }}>
-            <button onClick={() => { dispatch.editModel.addAdditionalStoresSection(true) }}>
+            <button className="border border-stone-600 rounded-md" onClick={() => { dispatch.editModel.addAdditionalStoresSection(true) }}>
               Add Additional Stores Section
             </button>
           </div>
@@ -369,7 +383,7 @@ const EditFeaturedDeals: React.FC<{ section: FeaturedDealsSection }> = ({ sectio
       </div>
 
 
-      <div style={{ display: 'flex', flexDirection: 'row' }}>
+      <div style={{ display: 'flex', flexDirection: 'row', width: '100%', flexWrap: 'wrap' }}>
         {deals.map(d => {
           return (
             <div className="border flex justify-center items-center mr-4 flex-col" style={{ width: 200, height: 250 }} key={d.id}>
