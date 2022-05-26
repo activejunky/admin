@@ -1,7 +1,7 @@
 import * as React from 'react'
 import { Link } from 'react-router-dom'
 import { Backend } from '../Backend/Api'
-import { HeadlessDigitalEvent } from '../Models'
+import { HeadlessDigitalEvent } from '../Models/Models'
 import * as A from 'fp-ts/Array'
 
 

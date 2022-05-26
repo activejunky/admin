@@ -17,7 +17,7 @@ import {
   useSortable
 } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
-import { AJStore } from '../../Models';
+import { AJStore } from '../../Models/Models';
 import { SocketAddress } from 'net';
 
 

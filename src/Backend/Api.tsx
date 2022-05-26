@@ -1,5 +1,5 @@
 import { head } from "fp-ts/lib/ReadonlyNonEmptyArray"
-import { AJStore, Deal, dealT, HeadlessDigitalEvent, HeadlessDigitalEventResponseObj, headlessDigitalEventResponseObjT } from "../Models"
+import { AJStore, Deal, dealT, HeadlessDigitalEvent, HeadlessDigitalEventResponseObj, headlessDigitalEventResponseObjT } from "../Models/Models"
 import * as E from 'fp-ts/Either'
 import { PathReporter } from 'io-ts/PathReporter'
 import * as iotst from 'io-ts-types'

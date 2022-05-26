@@ -8,7 +8,7 @@ import { Lens } from 'monocle-ts'
 import * as Op from 'monocle-ts/lib/Optional'
 import createCachedSelector from 're-reselect'
 import { Backend } from '../Backend/Api'
-import { AdditionalStoresSection, AJStore, Deal, FeaturedDealsSection, HeadlessDigitalEvent, HeadlessDigitalEventContent, HeadlessDigitalEventResponseObj, isAdditionalStoresSection, isKnownSection, Modelenz, Section } from '../Models'
+import { AdditionalStoresSection, AJStore, Deal, FeaturedDealsSection, HeadlessDigitalEvent, HeadlessDigitalEventContent, HeadlessDigitalEventResponseObj, isAdditionalStoresSection, isKnownSection, Modelenz, Section } from '../Models/Models'
 
 export type PageState = {
   de: HeadlessDigitalEvent
@@ -25,9 +25,8 @@ const deSectionsL = deContentL.compose(Lens.fromProp<HeadlessDigitalEventContent
 
 export const emptyFormState: HeadlessDigitalEventContent = {
   pageTitle: '',
-  banner: { title: '', cashBackString: '', backgroundImageUrl: null },
-  sections: [{ tag: 'KNOWN', section: { tag: 'FEATURED_DEALS', deals: [] } }]
-  // featuredDeals: [],
+  banner: { title: '', cashBackString: '', backgroundImageUrl: null, handoffUrl: null },
+  sections: [{ tag: 'KNOWN', section: { tag: 'FEATURED_DEALS', deals: [] } }],
 }
 
 const emptyDE_State: HeadlessDigitalEvent = {
@@ -75,6 +74,9 @@ export const editModel = createModel<RootModel>()({
     },
     setBannerImageUrl(state, payload: string) {
       return pipe(state, deBannerL.modify(b => ({ ...b, backgroundImageUrl: payload })))
+    },
+    setBannerHandoffUrl(state, payload: string) {
+      return pipe(state, deBannerL.modify(b => ({ ...b, handoffUrl: payload })))
     },
 
     setSection(state, payload: { sectionId: number, section: Section }) {

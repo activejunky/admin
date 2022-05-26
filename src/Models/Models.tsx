@@ -39,7 +39,8 @@ export type Deal = iots.TypeOf<typeof dealT>
 const bannerContentT = iots.type({
   title: iots.string,
   cashBackString: iots.string,
-  backgroundImageUrl: iots.union([iots.string, iots.null])
+  backgroundImageUrl: iots.union([iots.string, iots.null]),
+  handoffUrl: iots.union([iots.string, iots.null])
 })
 export type BannerContent = iots.TypeOf<typeof bannerContentT>
 

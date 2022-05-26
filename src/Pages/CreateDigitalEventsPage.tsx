@@ -6,10 +6,10 @@ import Modal from 'react-modal'
 import { Provider, useDispatch, useSelector } from "react-redux"
 import { useLocation, useParams } from 'react-router-dom'
 import Async from 'react-select/async'
-import { toast, ToastContainer } from 'react-toastify'
+import { toast, ToastContainer, ToastOptions } from 'react-toastify'
 import 'react-toastify/dist/ReactToastify.css'
 import { Backend, baseUrl, s3BaseUrl } from '../Backend/Api'
-import { AdditionalStoresSection, AJStore, Deal, FeaturedDealsSection, HeadlessDigitalEvent, isAdditionalStoresSection, isFeaturedDealsSection, isKnownSection } from '../Models'
+import { AdditionalStoresSection, AJStore, Deal, FeaturedDealsSection, HeadlessDigitalEvent, isAdditionalStoresSection, isFeaturedDealsSection, isKnownSection } from '../Models/Models'
 import { AJStoreDnD } from './CreateDigitalEvents/ItemSorter'
 import { Dispatch, RootState, store } from './CreateDigitalEventsPageVM'
 import { CopyToClipboard } from 'react-copy-to-clipboard';
@@ -63,7 +63,10 @@ export const DigitalEventsPage: React.FC<{}> = ({ }) => {
           <div style={{ display: 'flex' }}>
             <input type="text" value={`${isCopiedToClip.value}`} className="border" />
             <CopyToClipboard text={isCopiedToClip.value}
-              onCopy={() => setCopyToClip(v => ({ ...v, copied: true }))}>
+              onCopy={() => {
+                setCopyToClip(v => ({ ...v, copied: true }))
+                toast.success("Copied to clipboard!", { hideProgressBar: true })
+              }}>
               <button className='border border-stone-600 rounded-md'>Copy Dynamic link to clipboard</button>
             </CopyToClipboard>
           </div>
@@ -193,7 +196,7 @@ const ControlPanel: React.FC<{}> = ({ }) => {
     Backend.saveDraft(tkn, id, curForm).then(_ => {
       dispatch.editModel.setIsFetching(O.none)
       dispatch.editModel.syncDigitalEvent(id)
-      toast.success("Saved!")
+      toast.success("Saved!", { hideProgressBar: true })
     })
   }, [tkn, id, curForm])
 
@@ -201,7 +204,7 @@ const ControlPanel: React.FC<{}> = ({ }) => {
     console.log("CUR FORM! ", curForm)
     Backend.publishDraft(tkn, id).then(_ => {
       console.log("FINISHED SAVING! ")
-      toast.success("Published!")
+      toast.success("Published!", { hideProgressBar: true })
     })
   }, [tkn, id])
 
@@ -261,6 +264,7 @@ const EditBanner: React.FC<{ mbInitialDE?: HeadlessDigitalEvent }> = ({ mbInitia
   const dispatch = useDispatch<Dispatch>()
   const [savedTitle, setSavedTitle] = React.useState(banner.title)
   const [savedCashbackStr, setCachbackStr] = React.useState(banner.cashBackString)
+  const [handoffUrl, setHandoffUrl] = React.useState(banner.handoffUrl ?? "")
   const [savedImageUrl, ssiurl] = React.useState(banner.backgroundImageUrl ?? "")
   const curId = useCurId()
 
@@ -281,6 +285,10 @@ const EditBanner: React.FC<{ mbInitialDE?: HeadlessDigitalEvent }> = ({ mbInitia
 
   const setBannerImageUrl = (v: string) => {
     dispatch.editModel.setBannerImageUrl(v)
+  }
+
+  const setBannerHandoffUrl = (v: string) => {
+    dispatch.editModel.setBannerHandoffUrl(v)
   }
 
   const divStyleBase: React.CSSProperties = {
@@ -322,6 +330,12 @@ const EditBanner: React.FC<{ mbInitialDE?: HeadlessDigitalEvent }> = ({ mbInitia
           Cashback Text:
         </label>
         <EdiText type="text" value={savedCashbackStr} onSave={setCashbackText} />
+      </div>
+      <div style={{ marginBottom: 10, display: 'flex' }}>
+        <label style={{ display: 'flex', alignItems: 'center', marginRight: 10, fontWeight: 'bold' }}>
+          Handoff Url:
+        </label>
+        <EdiText type="text" value={handoffUrl} onSave={setBannerHandoffUrl} />
       </div>
       <div style={{ marginBottom: 10, display: 'flex', alignItems: 'center' }}>
         <label style={{ display: 'flex', alignItems: 'center', marginRight: 10, fontWeight: 'bold' }}>
