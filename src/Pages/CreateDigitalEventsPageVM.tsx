@@ -2,13 +2,16 @@ import { createModel, init, Models, RematchDispatch, RematchRootState } from '@r
 import immerPlugin from '@rematch/immer'
 import createSelectPlugin from '@rematch/select'
 import { pipe } from 'fp-ts/lib/function'
+import { fromSet } from 'fp-ts/lib/ReadonlySet'
 import * as O from 'fp-ts/Option'
 import * as ROA from 'fp-ts/ReadonlyArray'
+import { iteratorSymbol } from 'immer/dist/internal'
 import { Lens } from 'monocle-ts'
 import * as Op from 'monocle-ts/lib/Optional'
 import createCachedSelector from 're-reselect'
 import { Backend } from '../Backend/Api'
-import { AdditionalStoresSection, AJStore, Deal, FeaturedDealsSection, HeadlessDigitalEvent, HeadlessDigitalEventContent, HeadlessDigitalEventResponseObj, isAdditionalStoresSection, isKnownSection, Modelenz, Section } from '../Models/Models'
+import { HandoffSelect } from '../Components/HandoffModal'
+import { AdditionalStoresSection, AJStore, Deal, FeaturedDealsSection, Handoff, HeadlessDigitalEvent, HeadlessDigitalEventContent, HeadlessDigitalEventResponseObj, isAdditionalStoresSection, isKnownSection, Modelenz, Section } from '../Models/Models'
 
 export type PageState = {
   de: HeadlessDigitalEvent
@@ -25,7 +28,7 @@ const deSectionsL = deContentL.compose(Lens.fromProp<HeadlessDigitalEventContent
 
 export const emptyFormState: HeadlessDigitalEventContent = {
   pageTitle: '',
-  banner: { title: '', cashBackString: '', backgroundImageUrl: null, handoffUrl: null },
+  banner: { title: '', cashBackString: '', backgroundImageUrl: null },
   sections: [{ tag: 'KNOWN', section: { tag: 'FEATURED_DEALS', deals: [] } }],
 }
 
@@ -42,6 +45,18 @@ const emptyPageState: PageState = {
   mbServerState: null,
   isFetching: O.none,
   showSuccess: false
+}
+
+function toHandoff(s: HandoffSelect): O.Option<Handoff> {
+  if (s.tag === 'store' && s.storeSlug) {
+    return O.some({ tag: 'storeHandoff', storeSlug: s.storeSlug })
+  }
+
+  if (s.tag === 'deal' && s.dealId) {
+    return O.some({ tag: 'dealHandoff', dealId: s.dealId })
+  }
+
+  return O.none
 }
 
 export const editModel = createModel<RootModel>()({
@@ -75,8 +90,12 @@ export const editModel = createModel<RootModel>()({
     setBannerImageUrl(state, payload: string) {
       return pipe(state, deBannerL.modify(b => ({ ...b, backgroundImageUrl: payload })))
     },
-    setBannerHandoffUrl(state, payload: string) {
-      return pipe(state, deBannerL.modify(b => ({ ...b, handoffUrl: payload })))
+    setBannerHandoff(state, payload: HandoffSelect) {
+      const mbHandoff = toHandoff(payload)
+      if (O.isSome(mbHandoff)) {
+        return pipe(state, deBannerL.modify(b => ({ ...b, handoff: mbHandoff.value })))
+      }
+      return state
     },
 
     setSection(state, payload: { sectionId: number, section: Section }) {

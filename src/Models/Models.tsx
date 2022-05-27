@@ -36,18 +36,35 @@ export const dealT = iots.type({
 
 export type Deal = iots.TypeOf<typeof dealT>
 
-const bannerContentT = iots.type({
+const storeHandoffT = iots.type({ tag: iots.literal('storeHandoff'), storeSlug: iots.string })
+const dealHandoffT = iots.type({ tag: iots.literal('dealHandoff'), dealId: iots.number })
+const customUrlHandoffT = iots.type({ tag: iots.literal('customUrlHandoff'), url: iots.string })
+
+const handoffT = iots.union([storeHandoffT, dealHandoffT, customUrlHandoffT])
+export type Handoff = iots.TypeOf<typeof handoffT>
+
+
+// *** CONTENT STUFF *****
+
+const bannerContentBaseT = iots.type({
   title: iots.string,
   cashBackString: iots.string,
-  backgroundImageUrl: iots.union([iots.string, iots.null]),
-  handoffUrl: iots.union([iots.string, iots.null])
+  backgroundImageUrl: iots.union([iots.string, iots.null])
 })
+
+const handoffUrlT = iots.partial({
+  handoff: handoffT
+})
+
+const bannerContentT = iots.intersection([bannerContentBaseT, handoffUrlT])
+
 export type BannerContent = iots.TypeOf<typeof bannerContentT>
 
 export const featuredDealsSectionT = iots.type({
   tag: iots.literal('FEATURED_DEALS'),
   deals: iots.array(dealT)
 })
+
 
 export type FeaturedDealsSection = iots.TypeOf<typeof featuredDealsSectionT>
 
