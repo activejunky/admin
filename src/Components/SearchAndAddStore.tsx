@@ -20,8 +20,8 @@ export const SearchAndAddStoreModalContent: React.FC<SearchAndAddStoreModalConte
 
       <div>
         <Async
-          defaultValue={{ value: '', label: '' }}
-          placeholder={"Search for store"}
+          defaultValue={undefined as (undefined | { value: string, label: string })}
+          placeholder={<div>Search for store</div>}
           onChange={onChange}
           formatOptionLabel={({ value, label }) => (
             <div style={{ display: "flex", flexDirection: 'column' }}>
