@@ -19,16 +19,11 @@ type Props = {
   onSubmit: () => void
 }
 
-export type HandoffSelect = { tag: 'store', storeSlug: string | null } | { tag: 'deal', dealId: null | number }
+export type HandoffSelect = { tag: 'store', store: AJStore | null } | { tag: 'deal', dealId: null | number }
 
 export const EditHandoffModal: React.FC<Props> = ({ modalProps, onConfirmAdd }) => {
   const [curType, setCurType] = React.useState<HandoffSelect | null>(null)
   const [searchMatchingStores, setSearchMatchingStores] = React.useState<null | AJStore[]>()
-
-  const setStoreId = (e: React.FormEvent<HTMLInputElement>) => {
-    const storeSlug = e.currentTarget.value
-    setCurType({ tag: 'store', storeSlug })
-  }
 
   const setDealId = (e: React.FormEvent<HTMLInputElement>) => {
     const dealId = parseInt(e.currentTarget.value)
@@ -44,7 +39,7 @@ export const EditHandoffModal: React.FC<Props> = ({ modalProps, onConfirmAdd }) 
           onChange={p => {
             console.log("P! ", p?.label, p?.value)
             if (p?.value && p.value === 'store') {
-              setCurType({ tag: 'store', storeSlug: null })
+              setCurType({ tag: 'store', store: null })
               return
             }
             if (p?.value && p.value === 'deal') {
@@ -68,12 +63,12 @@ export const EditHandoffModal: React.FC<Props> = ({ modalProps, onConfirmAdd }) 
                         const store = searchMatchingStores.find(s => s.url_slug === p.value)
                         console.log("MATCHING STORE! ", p, store)
                         if (store) {
-                          setCurType({ tag: 'store', storeSlug: store.url_slug })
+                          setCurType({ tag: 'store', store })
                         }
                       }
                     }}
                     setMatchingStores={(stores) => { setSearchMatchingStores(stores) }}
-                    selectedStoreSlug={curType.storeSlug}
+                    selectedStoreSlug={curType.store?.url_slug}
                     onAdd={(storeSlug) => {
                       onConfirmAdd(curType)
                     }}

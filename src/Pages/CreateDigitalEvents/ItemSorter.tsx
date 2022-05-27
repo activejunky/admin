@@ -19,6 +19,7 @@ import {
 import { CSS } from '@dnd-kit/utilities';
 import { AJStore } from '../../Models/Models';
 import { SocketAddress } from 'net';
+import { StoreIcon } from '../../Views/StoreIcon';
 
 
 function SortableItem(props: { id: string, stores: AJStore[], onRemove: (urlSlug: string) => void }) {
@@ -51,19 +52,6 @@ function SortableItem(props: { id: string, stores: AJStore[], onRemove: (urlSlug
     </div>
   );
 }
-
-const StoreIcon: React.FC<{ ajStore: AJStore, onRemove: () => void }> = ({ ajStore, onRemove }) => (
-  <div style={{ width: 180, height: 200, border: '1px solid black', marginRight: 20, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
-    {ajStore.name}
-    <img src={ajStore.image_url} style={{ height: 30, width: 'auto', maxWidth: 150 }} />
-    <button onClick={() => {
-      console.log("CLICKED THIS! ")
-      onRemove()
-    }}>
-      X
-    </button>
-  </div>
-)
 
 export const AJStoreDnD: React.FC<{ stores: AJStore[], onRemove: (urlSlug: string) => void }> = ({ stores, onRemove }) => {
   const [items, setItems] = useState(stores.map(s => s.url_slug));

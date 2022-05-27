@@ -48,8 +48,8 @@ const emptyPageState: PageState = {
 }
 
 function toHandoff(s: HandoffSelect): O.Option<Handoff> {
-  if (s.tag === 'store' && s.storeSlug) {
-    return O.some({ tag: 'storeHandoff', storeSlug: s.storeSlug })
+  if (s.tag === 'store' && s.store) {
+    return O.some({ tag: 'storeHandoff', store: s.store })
   }
 
   if (s.tag === 'deal' && s.dealId) {

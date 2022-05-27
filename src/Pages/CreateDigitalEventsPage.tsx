@@ -16,6 +16,7 @@ import { CopyToClipboard } from 'react-copy-to-clipboard';
 import { boolean } from 'fp-ts'
 import { EditHandoffModal } from '../Components/HandoffModal'
 import { SearchAndAddStoreModalContent } from '../Components/SearchAndAddStore'
+import { StoreIcon } from '../Views/StoreIcon'
 
 const customStyles = {
   content: {
@@ -334,17 +335,24 @@ const EditBanner: React.FC<{ mbInitialDE?: HeadlessDigitalEvent }> = ({ mbInitia
 
       <div style={{ marginBottom: 10, display: 'flex' }}>
         <label style={{ display: 'flex', alignItems: 'center', marginRight: 10, fontWeight: 'bold' }}>
-          Handoff Url:
+          Handoff:
         </label>
         {handoff ?
-          (<div className="flex items-center">
-            <h3>{JSON.stringify(handoff)}</h3>
-            <button
-              className="border p-2 rounded-med rounded-md"
-              onClick={() => { setIsHandoffModalOpen(f => !f) }}>
-              Edit
-            </button>
-          </div>)
+          (
+            handoff.tag === 'storeHandoff'
+              ?
+
+              (<div className="flex items-center">
+                <StoreIcon ajStore={handoff.store} height={100} />
+                <button
+                  className="border p-2 rounded-med rounded-md"
+                  onClick={() => { setIsHandoffModalOpen(f => !f) }}>
+                  Edit
+                </button>
+              </div>)
+              :
+              (<></>)
+          )
           :
           (
 
@@ -371,7 +379,7 @@ const EditBanner: React.FC<{ mbInitialDE?: HeadlessDigitalEvent }> = ({ mbInitia
       </div>
       <div style={{ marginBottom: 10, display: 'flex', alignItems: 'center' }}>
         <label style={{ display: 'flex', alignItems: 'center', marginRight: 10, fontWeight: 'bold' }}>
-          Image Url:
+          Background Image Url:
         </label>
         <EdiText type="text" value={savedImageUrl} onSave={setBannerImageUrl} />
         {banner.backgroundImageUrl

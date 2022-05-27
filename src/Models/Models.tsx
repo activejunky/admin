@@ -36,7 +36,7 @@ export const dealT = iots.type({
 
 export type Deal = iots.TypeOf<typeof dealT>
 
-const storeHandoffT = iots.type({ tag: iots.literal('storeHandoff'), storeSlug: iots.string })
+const storeHandoffT = iots.type({ tag: iots.literal('storeHandoff'), store: ajStoreT })
 const dealHandoffT = iots.type({ tag: iots.literal('dealHandoff'), dealId: iots.number })
 const customUrlHandoffT = iots.type({ tag: iots.literal('customUrlHandoff'), url: iots.string })
 
