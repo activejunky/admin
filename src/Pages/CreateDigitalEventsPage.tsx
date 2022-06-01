@@ -18,6 +18,7 @@ import { EditHandoffModal } from '../Components/HandoffModal'
 import { SearchAndAddStoreModalContent } from '../Components/SearchAndAddStore'
 import { StoreIcon } from '../Views/StoreIcon'
 import { onErrorResumeNext } from 'rxjs'
+import { DealTile } from '../Components/DealView'
 
 const customStyles = {
   content: {
@@ -458,14 +459,7 @@ const EditFeaturedDeals: React.FC<{ section: FeaturedDealsSection }> = ({ sectio
       <div style={{ display: 'flex', flexDirection: 'row', width: '100%', flexWrap: 'wrap' }}>
         {deals.map(d => {
           return (
-            <div className="border flex justify-center items-center mr-4 flex-col" style={{ width: 200, height: 250 }} key={d.id}>
-              <img src={d.store.image_url} style={{ width: 30, height: 30 }} />
-              <h3 style={{ fontWeight: 'bold' }}>{d.store.name}</h3>
-              {`${d.title} - ${d.id}`}
-              <button className="border rounded-md p-2" style={{ marginTop: 8 }} onClick={() => { dispatch.editModel.removeFeaturedDeal(d) }}>
-                X
-              </button>
-            </div>
+            <DealTile deal={d} onRemove={() => { dispatch.editModel.removeFeaturedDeal(d) }} />
           )
         })}
         {/* <AJStoreDnD

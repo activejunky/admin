@@ -17,35 +17,52 @@ export const AllDigitalEventsPage: React.FC<{}> = ({ }) => {
   }, [])
 
   return (
-    <div>
-      All Digital Events
-      <ul>
-        {allEvents
-          ?
-          (<AllEvents events={allEvents} />)
-          :
-          (<></>)
-        }
-      </ul>
+    <div className="flex w-screen h-screen pt-32" style={{ border: '8px solid red' }}>
+      <div className="w-1/4 h-screen"></div>
+      {allEvents
+        ?
+        (<AllEvents events={allEvents} />)
+        :
+        (<div>Loading...</div>)
+      }
     </div>
   )
 }
 
 const AllEvents: React.FC<{ events: HeadlessDigitalEvent[] }> = ({ events }) => {
   return (
-    <ul>
-      {events.map(hde => <EventRow key={hde.id} hde={hde} />)}
-    </ul>
+    <div className="h-1/2 w-1/2 bg-blue-100 overflow-auto">
+      <table className="relative w-full border">
+        <thead >
+          <tr>
+            <th className="sticky top-0 px-6 py-3">
+              Title
+            </th>
+            <th className="sticky top-0 px-6 py-3">
+              Last Saved At
+            </th>
+          </tr>
+        </thead>
+        <tbody className="divide-y bg-white">
+          {events.map(hde => <EventRow key={hde.id} hde={hde} />)}
+        </tbody>
+      </table>
+    </div>
   )
 }
 
 const EventRow: React.FC<{ hde: HeadlessDigitalEvent }> = ({ hde }) => {
   return (
-    <li>
-      <Link to={`${hde.id}`} style={{ borderBottom: '1px solid black' }} >
-        {hde.title}
-      </Link>
-    </li>
+    <tr className="border-b">
+      <td className="py-8">
+        <Link to={`${hde.id}`} style={{ borderBottom: '1px solid black' }} >
+          {hde.title}
+        </Link>
+      </td>
+      <td className="px-32">
+        {hde.last_saved_at}
+      </td>
+    </tr>
   )
 }
 
