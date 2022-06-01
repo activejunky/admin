@@ -52,8 +52,8 @@ function toHandoff(s: HandoffSelect): O.Option<Handoff> {
     return O.some({ tag: 'storeHandoff', store: s.store })
   }
 
-  if (s.tag === 'deal' && s.dealId) {
-    return O.some({ tag: 'dealHandoff', dealId: s.dealId })
+  if (s.tag === 'deal' && s.dealId && s.store) {
+    return O.some({ tag: 'dealHandoff', store: s.store, dealId: s.dealId })
   }
 
   return O.none

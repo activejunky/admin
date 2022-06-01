@@ -6,7 +6,8 @@ import {
   PointerSensor,
   useSensor,
   useSensors,
-  DragEndEvent
+  DragEndEvent,
+  UniqueIdentifier
 } from '@dnd-kit/core';
 import {
   arrayMove,
@@ -22,7 +23,7 @@ import { SocketAddress } from 'net';
 import { StoreIcon } from '../../Views/StoreIcon';
 
 
-function SortableItem(props: { id: string, stores: AJStore[], onRemove: (urlSlug: string) => void }) {
+function SortableItem(props: { id: UniqueIdentifier, stores: AJStore[], onRemove: (urlSlug: string) => void }) {
   const {
     attributes,
     listeners,
@@ -43,7 +44,7 @@ function SortableItem(props: { id: string, stores: AJStore[], onRemove: (urlSlug
         ?
         (
           <StoreIcon ajStore={matchingStore} onRemove={() => {
-            props.onRemove(props.id)
+            props.onRemove(props.id as string)
           }} />
         )
         :
@@ -53,8 +54,13 @@ function SortableItem(props: { id: string, stores: AJStore[], onRemove: (urlSlug
   );
 }
 
-export const AJStoreDnD: React.FC<{ stores: AJStore[], onRemove: (urlSlug: string) => void }> = ({ stores, onRemove }) => {
-  const [items, setItems] = useState(stores.map(s => s.url_slug));
+type AJStoreDnDProps = {
+  stores: AJStore[]
+  onRemove: (urlSlug: string) => void
+}
+
+export const AJStoreDnD: React.FC<AJStoreDnDProps> = ({ stores, onRemove }) => {
+  const [items, setItems] = useState<UniqueIdentifier[]>(stores.map(s => s.url_slug));
   const sensors = useSensors(
     useSensor(PointerSensor, {
       activationConstraint: {
@@ -92,14 +98,14 @@ export const AJStoreDnD: React.FC<{ stores: AJStore[], onRemove: (urlSlug: strin
     const { active, over } = event;
 
     if (active.id !== over?.id) {
-      // setItems((items) => {
-      //   const oldIndex = items.indexOf(active.id);
-      //   const newIndex = items.indexOf(over?.id ?? 3);
+      setItems((items) => {
+        const oldIndex = items.indexOf(active.id);
+        const newIndex = items.indexOf(over?.id ?? '3');
 
-      //   const newOrder = arrayMove(items, oldIndex, newIndex);
+        const newOrder = arrayMove(items, oldIndex, newIndex);
 
-      //   return newOrder
-      // });
+        return newOrder
+      });
     }
   }
 }

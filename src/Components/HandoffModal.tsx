@@ -1,10 +1,13 @@
 import * as React from 'react'
 import Select from 'react-select'
 import Modal from 'react-modal'
-import { Handoff } from '../Models/Models'
+import { Handoff, Modelenz } from '../Models/Models'
 import { IterationStatement } from 'typescript'
 import { AdditionalStoresSection, AJStore, Deal, FeaturedDealsSection, HeadlessDigitalEvent, isAdditionalStoresSection, isFeaturedDealsSection, isKnownSection } from '../Models/Models'
 import { SearchAndAddStoreModalContent } from './SearchAndAddStore'
+import { Prism } from 'monocle-ts'
+import * as P from 'monocle-ts/Prism'
+import { pipe } from 'fp-ts/lib/function'
 
 const options = [
   { value: 'store', label: 'store' },
@@ -19,7 +22,21 @@ type Props = {
   onSubmit: () => void
 }
 
-export type HandoffSelect = { tag: 'store', store: AJStore | null } | { tag: 'deal', dealId: null | number }
+type StoreHandoffSelect = { tag: 'store', store: AJStore | null }
+type DealHandoffSelect = { tag: 'deal', store: AJStore | null, dealId: null | number }
+
+export type HandoffSelect = StoreHandoffSelect | DealHandoffSelect
+
+function isStoreHandoff(hs: HandoffSelect): hs is StoreHandoffSelect { return hs.tag === 'store' }
+function isDealHandoff(hs: HandoffSelect): hs is DealHandoffSelect { return hs.tag === 'deal' }
+const handoffSelectStoreP = Prism.fromPredicate<HandoffSelect, StoreHandoffSelect>(isStoreHandoff)
+const handoffSelectDealP = Prism.fromPredicate<HandoffSelect, DealHandoffSelect>(isDealHandoff)
+
+type Mode = HandoffSelect | null
+function isHandoffSelect(m: Mode): m is HandoffSelect { return m !== null }
+const mp = pipe(Prism.fromPredicate<Mode, HandoffSelect>(isHandoffSelect), P.fromNullable)
+const modeStoreP = pipe(mp, P.composePrism(handoffSelectStoreP))
+const modeDealP = pipe(mp, P.composePrism(handoffSelectDealP))
 
 export const EditHandoffModal: React.FC<Props> = ({ modalProps, onConfirmAdd }) => {
   const [curType, setCurType] = React.useState<HandoffSelect | null>(null)
@@ -27,7 +44,9 @@ export const EditHandoffModal: React.FC<Props> = ({ modalProps, onConfirmAdd }) 
 
   const setDealId = (e: React.FormEvent<HTMLInputElement>) => {
     const dealId = parseInt(e.currentTarget.value)
-    setCurType({ tag: 'deal', dealId })
+    setCurType(
+      pipe(modeDealP, P.modify(dhs => ({ ...dhs, dealId })))
+    )
   }
 
   return (
@@ -43,7 +62,7 @@ export const EditHandoffModal: React.FC<Props> = ({ modalProps, onConfirmAdd }) 
               return
             }
             if (p?.value && p.value === 'deal') {
-              setCurType({ tag: 'deal', dealId: null })
+              setCurType({ tag: 'deal', store: null, dealId: null })
               return
             }
           }}
@@ -51,10 +70,20 @@ export const EditHandoffModal: React.FC<Props> = ({ modalProps, onConfirmAdd }) 
         {curType
           ?
           (
-            curType.tag === 'store'
+            (curType.tag === 'store' || curType.tag === 'deal')
               ?
               (
                 <div>
+                  {curType.tag === 'deal'
+                    ?
+                    (
+                      <div className="mt-4">
+                        <input className='border' type="text" value={curType.dealId?.toString()} placeholder="deal id" style={{ width: 300 }} onChange={setDealId} />
+                      </div>
+                    )
+                    :
+                    (<></>)
+                  }
                   {/* <input className='border' type="text" value={curType.storeSlug ?? ""} placeholder="store id" style={{ width: 300 }} onChange={setStoreId} /> */}
                   <SearchAndAddStoreModalContent
                     closeModal={() => { }}
@@ -63,7 +92,17 @@ export const EditHandoffModal: React.FC<Props> = ({ modalProps, onConfirmAdd }) 
                         const store = searchMatchingStores.find(s => s.url_slug === p.value)
                         console.log("MATCHING STORE! ", p, store)
                         if (store) {
-                          setCurType({ tag: 'store', store })
+                          if (curType.tag === 'store') {
+                            setCurType({ tag: 'store', store })
+                            return
+                          }
+
+                          if (curType.tag === 'deal') {
+                            setCurType(ct =>
+                              pipe(modeDealP, P.modify(dh => ({ ...dh, store })))(ct)
+                            )
+                            return
+                          }
                         }
                       }
                     }}
@@ -77,10 +116,7 @@ export const EditHandoffModal: React.FC<Props> = ({ modalProps, onConfirmAdd }) 
               )
               :
               (
-                <div>
-                  <input className='border' type="text" value={curType.dealId?.toString()} placeholder="deal id" style={{ width: 300 }} onChange={setDealId} />
-                  <p>Deal id! {curType.dealId}</p>
-                </div>
+                <></>
               )
           )
           :

@@ -9,7 +9,7 @@ import Async from 'react-select/async'
 import { toast, ToastContainer, ToastOptions } from 'react-toastify'
 import 'react-toastify/dist/ReactToastify.css'
 import { Backend, baseUrl, s3BaseUrl } from '../Backend/Api'
-import { AdditionalStoresSection, AJStore, Deal, FeaturedDealsSection, HeadlessDigitalEvent, isAdditionalStoresSection, isFeaturedDealsSection, isKnownSection } from '../Models/Models'
+import { AdditionalStoresSection, AJStore, Deal, FeaturedDealsSection, Handoff, HeadlessDigitalEvent, isAdditionalStoresSection, isFeaturedDealsSection, isKnownSection } from '../Models/Models'
 import { AJStoreDnD } from './CreateDigitalEvents/ItemSorter'
 import { Dispatch, RootState, store } from './CreateDigitalEventsPageVM'
 import { CopyToClipboard } from 'react-copy-to-clipboard';
@@ -17,6 +17,7 @@ import { boolean } from 'fp-ts'
 import { EditHandoffModal } from '../Components/HandoffModal'
 import { SearchAndAddStoreModalContent } from '../Components/SearchAndAddStore'
 import { StoreIcon } from '../Views/StoreIcon'
+import { onErrorResumeNext } from 'rxjs'
 
 const customStyles = {
   content: {
@@ -296,9 +297,6 @@ const EditBanner: React.FC<{ mbInitialDE?: HeadlessDigitalEvent }> = ({ mbInitia
     width: '100%', border: '3px solid black', display: 'flex', flexDirection: 'column', alignItems: 'flex-start'
   }
 
-  const divStyle = savedImageUrl ? {
-    ...divStyleBase, backgroundImage: `url(${savedImageUrl})`
-  } : divStyleBase
 
   React.useEffect(() => {
     console.log("SAVED IMAGE URL! ", savedImageUrl)
@@ -339,23 +337,10 @@ const EditBanner: React.FC<{ mbInitialDE?: HeadlessDigitalEvent }> = ({ mbInitia
         </label>
         {handoff ?
           (
-            handoff.tag === 'storeHandoff'
-              ?
-
-              (<div className="flex items-center">
-                <StoreIcon ajStore={handoff.store} height={100} />
-                <button
-                  className="border p-2 rounded-med rounded-md"
-                  onClick={() => { setIsHandoffModalOpen(f => !f) }}>
-                  Edit
-                </button>
-              </div>)
-              :
-              (<></>)
+            <CurHandoffView handoff={handoff} onEdit={() => setIsHandoffModalOpen(f => !f)} />
           )
           :
           (
-
             <button
               className="border p-2 rounded-med rounded-md"
               onClick={() => { setIsHandoffModalOpen(f => !f) }}>
@@ -392,6 +377,39 @@ const EditBanner: React.FC<{ mbInitialDE?: HeadlessDigitalEvent }> = ({ mbInitia
       </div>
     </div>
   )
+}
+
+const CurHandoffView: React.FC<{ handoff: Handoff, onEdit: () => void }> = ({ handoff, onEdit }) => {
+  switch (handoff.tag) {
+    case 'storeHandoff':
+      return (
+        <div className="flex items-center">
+          <StoreIcon ajStore={handoff.store} height={100} />
+          <button
+            className="border p-2 rounded-med rounded-md"
+            onClick={onEdit}>
+            Edit
+          </button>
+        </div>
+      )
+    case 'dealHandoff':
+      return (
+        <div className="flex items-center">
+          <div>Deal Id: {handoff.dealId}</div>
+          <StoreIcon ajStore={handoff.store} height={100} />
+          <button
+            className="border p-2 rounded-med rounded-md"
+            onClick={onEdit}>
+            Edit
+          </button>
+        </div>
+      )
+    case 'customUrlHandoff':
+      return (
+        <></>
+      )
+
+  }
 }
 
 
