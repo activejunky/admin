@@ -31,8 +31,8 @@ export type AJStore = iots.TypeOf<typeof ajStoreT>
 export const dealT = iots.type({
   id: iots.number,
   title: iots.string,
-  description: iots.string,
-  deal_code: iots.union([iots.null, iots.string]),
+  description: iots.union([iots.string, iots.undefined, iots.null]),
+  deal_code: iots.union([iots.null, iots.undefined, iots.string]),
   store: ajStoreT
 })
 
