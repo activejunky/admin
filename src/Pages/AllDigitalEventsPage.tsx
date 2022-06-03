@@ -7,6 +7,7 @@ import * as A from 'fp-ts/Array'
 
 export const AllDigitalEventsPage: React.FC<{}> = ({ }) => {
   const [allEvents, setAllEvents] = React.useState<HeadlessDigitalEvent[] | null>(null)
+  const [isShowingCreateModal, setIsShowingCreateModal] = React.useState(false)
 
   React.useEffect(() => {
     Backend.allDigitalEvents().then(r => {
@@ -17,7 +18,7 @@ export const AllDigitalEventsPage: React.FC<{}> = ({ }) => {
   }, [])
 
   return (
-    <div className="flex w-screen h-screen pt-32" style={{ border: '8px solid red' }}>
+    <div className="flex w-screen h-screen pt-32">
       <div className="w-1/4 h-screen"></div>
       {allEvents
         ?

@@ -32,7 +32,7 @@ export const dealT = iots.type({
   id: iots.number,
   title: iots.string,
   description: iots.string,
-  deal_code: iots.string,
+  deal_code: iots.union([iots.null, iots.string]),
   store: ajStoreT
 })
 
