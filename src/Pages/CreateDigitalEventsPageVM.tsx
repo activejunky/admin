@@ -11,7 +11,7 @@ import * as Op from 'monocle-ts/lib/Optional'
 import createCachedSelector from 're-reselect'
 import { Backend } from '../Backend/Api'
 import { HandoffSelect } from '../Components/HandoffModal'
-import { AdditionalStoresSection, AJStore, Deal, FeaturedDealsSection, Handoff, HeadlessDigitalEvent, HeadlessDigitalEventContent, HeadlessDigitalEventResponseObj, isAdditionalStoresSection, isKnownSection, Modelenz, Section } from '../Models/Models'
+import { AdditionalStoresSection, AJStore, BannerContent, Deal, FeaturedDealsSection, Handoff, HeadlessDigitalEvent, HeadlessDigitalEventContent, HeadlessDigitalEventResponseObj, isAdditionalStoresSection, isKnownSection, Modelenz, Section } from '../Models/Models'
 
 export type PageState = {
   de: HeadlessDigitalEvent
@@ -89,6 +89,12 @@ export const editModel = createModel<RootModel>()({
     },
     setBannerImageUrl(state, payload: string) {
       return pipe(state, deBannerL.modify(b => ({ ...b, backgroundImageUrl: payload })))
+    },
+    setBannerTextColorId(state, payload: number) {
+      return pipe(state, deBannerL.modify(b => ({ ...b, text_color_id: payload })))
+    },
+    setBannerMainCopy(state, payload: string) {
+      return pipe(state, deBannerL.modify(b => ({ ...b, main_copy: payload })))
     },
     setBannerHandoff(state, payload: HandoffSelect) {
       const mbHandoff = toHandoff(payload)

@@ -11,7 +11,7 @@ import 'react-toastify/dist/ReactToastify.css'
 import { Backend, baseUrl, s3BaseUrl } from '../Backend/Api'
 import { AdditionalStoresSection, AJStore, Deal, FeaturedDealsSection, Handoff, HeadlessDigitalEvent, isAdditionalStoresSection, isFeaturedDealsSection, isKnownSection } from '../Models/Models'
 import { AJStoreDnD } from './CreateDigitalEvents/ItemSorter'
-import { Dispatch, RootState, store } from './CreateDigitalEventsPageVM'
+import { Dispatch, editModel, RootState, store } from './CreateDigitalEventsPageVM'
 import { CopyToClipboard } from 'react-copy-to-clipboard';
 import { boolean } from 'fp-ts'
 import { EditHandoffModal } from '../Components/HandoffModal'
@@ -232,13 +232,6 @@ const ControlPanel: React.FC<{}> = ({ }) => {
   )
 }
 
-const Preview: React.FC<{}> = ({ }) => {
-  const fullPage = useSelector((state: RootState) => state)
-
-  return (
-    <div>{JSON.stringify(fullPage.editModel.de.content.sections)}</div>
-  )
-}
 
 const EditPageTitle: React.FC<{}> = ({ }) => {
   const dispatch = useDispatch<Dispatch>()
@@ -268,9 +261,11 @@ const EditBanner: React.FC<{ mbInitialDE?: HeadlessDigitalEvent }> = ({ mbInitia
   const banner = useSelector((state: RootState) => state.editModel.de.content.banner)
   const dispatch = useDispatch<Dispatch>()
   const [savedTitle, setSavedTitle] = React.useState(banner.title)
+  const [savedMainCopy, setSavedMainCopy] = React.useState(banner.main_copy ?? "")
   const [savedCashbackStr, setCachbackStr] = React.useState(banner.cashBackString)
   const [handoff, setHandoff] = React.useState(banner.handoff)
   const [savedImageUrl, ssiurl] = React.useState(banner.backgroundImageUrl ?? "")
+  const [textColorId, setSavedTextColorId] = React.useState(banner.text_color_id ?? 0)
   const curId = useCurId()
   const [isHandoffModalOpen, setIsHandoffModalOpen] = React.useState(false)
 
@@ -279,6 +274,8 @@ const EditBanner: React.FC<{ mbInitialDE?: HeadlessDigitalEvent }> = ({ mbInitia
     setCachbackStr(banner.cashBackString)
     ssiurl(banner.backgroundImageUrl ?? "")
     setHandoff(banner.handoff)
+    setSavedTextColorId(banner.text_color_id ?? 0)
+    setSavedMainCopy(banner.main_copy ?? "")
   }, [banner])
 
   const setBannerTitle = (v: string) => {
@@ -292,6 +289,10 @@ const EditBanner: React.FC<{ mbInitialDE?: HeadlessDigitalEvent }> = ({ mbInitia
 
   const setBannerImageUrl = (v: string) => {
     dispatch.editModel.setBannerImageUrl(v)
+  }
+
+  const setBannerTextColorId = (v: string) => {
+    dispatch.editModel.setBannerTextColorId(parseInt(v))
   }
 
   const divStyleBase: React.CSSProperties = {
@@ -321,15 +322,30 @@ const EditBanner: React.FC<{ mbInitialDE?: HeadlessDigitalEvent }> = ({ mbInitia
       <h3 className="text-2xl font-bold mb-10">Banner</h3>
       <div style={{ marginBottom: 10, display: 'flex' }}>
         <label style={{ display: 'flex', alignItems: 'center', marginRight: 10, fontWeight: 'bold' }}>
-          Title:
+          Headline Copy:
         </label>
         <EdiText type="text" value={savedTitle} onSave={setBannerTitle} />
+      </div>
+      <div style={{ marginBottom: 10, display: 'flex' }}>
+        <label style={{ display: 'flex', alignItems: 'center', marginRight: 10, fontWeight: 'bold' }}>
+          Main Copy:
+        </label>
+        <EdiText type="text" value={savedMainCopy} onSave={mc => {
+          dispatch.editModel.setBannerMainCopy(mc)
+        }} />
       </div>
       <div style={{ marginBottom: 10, display: 'flex' }}>
         <label style={{ display: 'flex', alignItems: 'center', marginRight: 10, fontWeight: 'bold' }}>
           Cashback Text:
         </label>
         <EdiText type="text" value={savedCashbackStr} onSave={setCashbackText} />
+      </div>
+
+      <div style={{ marginBottom: 10, display: 'flex' }}>
+        <label style={{ display: 'flex', alignItems: 'center', marginRight: 10, fontWeight: 'bold' }}>
+          Text Color Id:
+        </label>
+        <EdiText type="text" value={textColorId.toString()} onSave={setBannerTextColorId} />
       </div>
 
       <div style={{ marginBottom: 10, display: 'flex' }}>

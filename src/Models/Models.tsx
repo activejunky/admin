@@ -49,7 +49,28 @@ type DealHandoff = iots.TypeOf<typeof dealHandoffT>
 
 
 
-// *** CONTENT STUFF *****
+
+
+// *** CONTENT STUFF *****\\
+
+/*
+export interface Slide {
+  readonly id: number
+  readonly background_image_url: string,
+  readonly main_copy: string,
+  readonly headline_copy: string,
+  readonly content_position_id: number,
+  readonly text_color_id: number,
+  readonly display_order: number,
+  readonly deal_code: string,
+  readonly deal_id: number,
+  readonly store: SimpleStore | null,
+  readonly button_url: string
+  readonly store_id: number
+  readonly start_at: string
+  readonly end_at: string
+}
+*/
 
 const bannerContentBaseT = iots.type({
   title: iots.string,
@@ -61,7 +82,21 @@ const handoffUrlT = iots.partial({
   handoff: handoffT
 })
 
-const bannerContentT = iots.intersection([bannerContentBaseT, handoffUrlT])
+const colorCodeT = iots.partial({
+  text_color_id: iots.number
+})
+
+const bannerCopyT = iots.partial({
+  headline_copy: iots.string,
+  main_copy: iots.string
+})
+
+const bannerStartEndT = iots.partial({
+  start_at: iots.string,
+  end_at: iots.string
+})
+
+const bannerContentT = iots.intersection([bannerContentBaseT, handoffUrlT, colorCodeT, bannerCopyT, bannerStartEndT])
 
 export type BannerContent = iots.TypeOf<typeof bannerContentT>
 
@@ -149,16 +184,6 @@ export const headlessDigitalEventResponseObjT = iots.type({
 })
 
 export type HeadlessDigitalEventResponseObj = iots.TypeOf<typeof headlessDigitalEventResponseObjT>
-
-class Cat {
-  constructor(private tag: string) { }
-}
-
-class Meow extends Cat {
-  constructor(private name: string) {
-    super("meow")
-  }
-}
 
 export module Modelenz {
   export const contentL = Lens.fromProp<HeadlessDigitalEvent>()('content')
