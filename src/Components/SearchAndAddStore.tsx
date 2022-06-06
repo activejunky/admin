@@ -4,6 +4,8 @@ import Async from 'react-select/async'
 import { Backend } from '../Backend/Api'
 import { match } from 'assert'
 import { isMobileDevice } from 'react-select/dist/declarations/src/utils'
+import Select from 'react-select/dist/declarations/src/Select'
+import { GroupBase } from 'react-select'
 
 type SearchAndAddStoreModalContentProps = {
   closeModal: () => void
@@ -66,6 +68,7 @@ export const StoreFinder: React.FC<{ mbInitialStore: AJStore | null, onSelect: (
   const [matchingStores, setMatchingStores] = React.useState<AJStore[]>([])
 
   React.useEffect(() => {
+    console.log("MB INITIAL! ", mbInitialStore)
     setSelectedStore(mbInitialStore)
   }, [mbInitialStore])
 

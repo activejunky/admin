@@ -262,3 +262,12 @@ export module Modelenz {
   export const storeHandoffP = new Prism<Handoff, StoreHandoff>(s => s.tag === 'storeHandoff' ? O.some(s) : O.none, s => s)
   export const dealHandoffP = new Prism<Handoff, DealHandoff>(s => s.tag === 'dealHandoff' ? O.some(s) : O.none, s => s)
 }
+
+
+export function colorCodeToColor(code: number): string {
+  if (code === 0) {
+    return 'black'
+  }
+
+  return 'white'
+}

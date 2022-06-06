@@ -1,9 +1,6 @@
-import { Lens } from 'monocle-ts'
 import * as React from 'react'
-import EdiText from 'react-editext'
-import { SlideData, SlideFormData } from '../../Models/Models'
-import Async from 'react-select/async'
-import { SearchAndAddStoreModalContent, StoreFinder } from '../SearchAndAddStore'
+import { colorCodeToColor, SlideFormData } from '../../Models/Models'
+import { StoreFinder } from '../SearchAndAddStore'
 
 
 const emptySlideFormData: SlideFormData = {
@@ -16,6 +13,7 @@ const emptySlideFormData: SlideFormData = {
 
 export const SlideCreator: React.FC<{ mbInitialSlide?: SlideFormData, onDoneSettingFields: (sfd: SlideFormData) => void }> = ({ mbInitialSlide, onDoneSettingFields }) => {
   const [slide, setSlide] = React.useState<SlideFormData>(mbInitialSlide ?? emptySlideFormData)
+
 
   return (
     <div>
@@ -50,6 +48,17 @@ export const SlideCreator: React.FC<{ mbInitialSlide?: SlideFormData, onDoneSett
               setSlide(s => ({ ...s, store }))
             }}
           />
+        </div>
+        <div className="flex items-center">
+          <div className="form-control max-w-md" style={{ marginBottom: 10, display: 'flex' }}>
+            <FormInput
+              type='number'
+              label={"Text Color Id"}
+              value={slide?.text_color_id ? slide.text_color_id.toString() : ""}
+              onInput={e => setSlide(s => ({ ...s, text_color_id: parseInt(e.target.value) }))}
+            />
+          </div>
+          <div className="ml-8" style={{ width: 40, height: 40, backgroundColor: `${colorCodeToColor(slide.text_color_id)}`, border: '1px solid black' }} />
         </div>
       </div>
       {/* <label htmlFor="my-modal" className="btn modal-button">open modal</label>
@@ -87,13 +96,6 @@ export const SlideCreator: React.FC<{ mbInitialSlide?: SlideFormData, onDoneSett
 export const CarouselEditor: React.FC<{ curSlides: SlideFormData[] }> = ({ curSlides }) => {
   const [showSlideEditor, setShowSlideEditor] = React.useState(false)
   const [slides, setSlides] = React.useState<SlideFormData[]>(curSlides)
-  const [curEditSlide, setCurEditSlide] = React.useState<null | SlideFormData>(null)
-
-  React.useEffect(() => {
-    if (showSlideEditor) {
-      setCurEditSlide(null)
-    }
-  }, [showSlideEditor])
 
   React.useEffect(() => {
     console.log("SHOW SLIDE EDITOR?! ", showSlideEditor)
@@ -111,7 +113,7 @@ export const CarouselEditor: React.FC<{ curSlides: SlideFormData[] }> = ({ curSl
               :
               (<></>)
             }
-            <h3>{cs.headline_copy}</h3>
+            <h3 style={{ color: `${colorCodeToColor(cs.text_color_id)}` }}>{cs.headline_copy}</h3>
             {/* <img src={cs.background_image_url} /> */}
           </div>
         )
@@ -145,13 +147,13 @@ export const CarouselEditor: React.FC<{ curSlides: SlideFormData[] }> = ({ curSl
 }
 
 
-const FormInput: React.FC<{ label: string, value: string, onInput: (e: React.ChangeEvent<HTMLInputElement>) => void }> = ({ label, value, onInput }) => {
+const FormInput: React.FC<{ label: string, value: string, type?: React.HTMLInputTypeAttribute, onInput: (e: React.ChangeEvent<HTMLInputElement>) => void }> = ({ label, type, value, onInput }) => {
   return (
     <div className="flex items-center my-8">
       <div className="form-control max-w-md" style={{ marginBottom: 10, display: 'flex' }}>
         <FormLabel label={label} />
         <input
-          type="text"
+          type={type ?? 'text'}
           className="input input-bordered w-full max-w-md"
           value={value}
           onChange={e => {
@@ -166,7 +168,6 @@ const FormInput: React.FC<{ label: string, value: string, onInput: (e: React.Cha
 
 const FormLabel: React.FC<{ label: string }> = ({ label }) => {
   return (
-
     <label className="label" style={{ display: 'flex', alignItems: 'center', marginRight: 10, fontWeight: 'bold' }}>
       <span className="label-text">{label}</span>
     </label>
