@@ -17,6 +17,7 @@ import * as iotst from 'io-ts-types'
 import * as AR from 'fp-ts/ReadonlyArray'
 import { number } from "fp-ts-std"
 import { indexReadonlyArray } from "monocle-ts/lib/Ix"
+import * as tdc from 'io-ts-derive-class'
 
 
 const ajStoreT = iots.type({
@@ -52,6 +53,14 @@ type DealHandoff = iots.TypeOf<typeof dealHandoffT>
 
 
 // *** CONTENT STUFF *****\\
+
+const slideFormDataT = iots.type({
+  headline_copy: iots.string,
+  background_image_url: iots.string,
+  text_color_id: iots.number
+})
+
+export type SlideFormData = iots.TypeOf<typeof slideFormDataT>
 
 export interface SlideData {
   readonly id: number
@@ -149,20 +158,19 @@ export function typeFilter<T, R extends T>(a: T[], f: (e: T) => e is R): R[] {
 }
 
 
-const headlessDigitalEventContentT = iots.type({
+const headlessDigitalEventContentBaseT = iots.type({
   pageTitle: iots.string,
   banner: bannerContentT,
-  sections: iots.array(sectionT)
+  sections: iots.array(sectionT),
 })
-export type HeadlessDigitalEventContent = {
-  pageTitle: string
-  banner: BannerContent
-  sections: Section[]
-  // featuredStores: AJStore[]
-  // additionalStores: null | { title: string, stores: AJStore[] }
-  // featuredDeals: Deal[]
-}
 
+const carouselFieldT = iots.partial({
+  carousel: iots.array(slideFormDataT)
+})
+
+const headlessDigitalEventContentT = iots.intersection([headlessDigitalEventContentBaseT, carouselFieldT])
+
+export type HeadlessDigitalEventContent = iots.TypeOf<typeof headlessDigitalEventContentT>
 export interface HeadlessDigitalEvent {
   id: string
   title: string

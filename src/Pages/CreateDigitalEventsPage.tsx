@@ -19,6 +19,7 @@ import { SearchAndAddStoreModalContent } from '../Components/SearchAndAddStore'
 import { StoreIcon } from '../Views/StoreIcon'
 import { onErrorResumeNext } from 'rxjs'
 import { DealTile } from '../Components/DealView'
+import { CarouselEditor, SlideCreator } from '../Components/CarouselCreator/SlideCreator'
 
 const customStyles = {
   content: {
@@ -118,6 +119,9 @@ const AllSections: React.FC<{}> = ({ }) => {
         <EditPageTitle />
         <SectionContainer>
           <EditBanner />
+        </SectionContainer>
+        <SectionContainer>
+          <CarouselEditor curSlides={[]} />
         </SectionContainer>
         {/* <SectionContainer>
           <EditFeaturedStores />
@@ -473,8 +477,6 @@ const EditFeaturedDeals: React.FC<{ section: FeaturedDealsSection }> = ({ sectio
           Add Featured Deal
         </button>
       </div>
-
-
 
       <div style={{ display: 'flex', flexDirection: 'row', width: '100%', flexWrap: 'wrap' }}>
         {deals.map(d => {
