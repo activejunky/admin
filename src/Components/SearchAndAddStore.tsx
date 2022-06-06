@@ -3,6 +3,7 @@ import { AJStore } from '../Models/Models'
 import Async from 'react-select/async'
 import { Backend } from '../Backend/Api'
 import { match } from 'assert'
+import { isMobileDevice } from 'react-select/dist/declarations/src/utils'
 
 type SearchAndAddStoreModalContentProps = {
   closeModal: () => void
@@ -60,19 +61,25 @@ export const SearchAndAddStoreModalContent: React.FC<SearchAndAddStoreModalConte
 }
 
 
-export const StoreFinder: React.FC<{ onSelect: (s: AJStore) => void }> = ({ onSelect }) => {
-  // const [selectedStore, setSelectedStore] = React.useState<AJStore | null>(null)
+export const StoreFinder: React.FC<{ mbInitialStore: AJStore | null, onSelect: (s: AJStore) => void }> = ({ mbInitialStore, onSelect }) => {
+  const [selectedStore, setSelectedStore] = React.useState<AJStore | null>(mbInitialStore)
   const [matchingStores, setMatchingStores] = React.useState<AJStore[]>([])
+
+  React.useEffect(() => {
+    setSelectedStore(mbInitialStore)
+  }, [mbInitialStore])
 
   return (
     <div className="w-full">
       <Async
         defaultValue={undefined as (undefined | { value: string, label: string })}
         placeholder={<div>Search for store</div>}
+        value={selectedStore ? ({ value: selectedStore.url_slug, label: selectedStore.name }) : undefined}
         onChange={p => {
           if (p?.value) {
             const mbMatchingStore = matchingStores.find(ms => ms.url_slug === p.value)
             if (mbMatchingStore) {
+              setSelectedStore(mbMatchingStore)
               onSelect(mbMatchingStore)
             }
           }

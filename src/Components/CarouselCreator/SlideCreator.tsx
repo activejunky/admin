@@ -45,6 +45,7 @@ export const SlideCreator: React.FC<{ mbInitialSlide?: SlideFormData, onDoneSett
         <FormLabel label="Store" />
         <div className="flex w-4/6">
           <StoreFinder
+            mbInitialStore={slide.store}
             onSelect={store => {
               setSlide(s => ({ ...s, store }))
             }}
