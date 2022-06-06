@@ -20,6 +20,7 @@ import { StoreIcon } from '../Views/StoreIcon'
 import { onErrorResumeNext } from 'rxjs'
 import { DealTile } from '../Components/DealView'
 import { CarouselEditor, SlideCreator } from '../Components/CarouselCreator/SlideCreator'
+import { Root } from 'react-dom/client'
 
 const customStyles = {
   content: {
@@ -120,15 +121,30 @@ const AllSections: React.FC<{}> = ({ }) => {
         <SectionContainer>
           <EditBanner />
         </SectionContainer>
-        <SectionContainer>
-          <CarouselEditor curSlides={[]} />
-        </SectionContainer>
+        <CarouselEditorSection />
         {/* <SectionContainer>
           <EditFeaturedStores />
         </SectionContainer> */}
         <CmsSections />
       </LoadingOverlay>
     </>
+  )
+}
+
+const CarouselEditorSection: React.FC<{}> = ({ }) => {
+  const carousel = useSelector((state: RootState) => state.editModel.de.content.carousel)
+  const dispatch = useDispatch<Dispatch>()
+
+  return (
+    <SectionContainer>
+      <CarouselEditor
+        curSlides={carousel ?? []}
+        onAddSlide={slide => {
+          const newCarousel = carousel ? [...carousel, slide] : [slide]
+          dispatch.editModel.setCarousel(newCarousel)
+        }}
+      />
+    </SectionContainer>
   )
 }
 

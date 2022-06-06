@@ -16,25 +16,25 @@ export const SlideCreator: React.FC<{ mbInitialSlide?: SlideFormData, onDoneSett
 
 
   return (
-    <div>
+    <div className="w-full">
       <h3 className="text-2xl font-bold mb-10">Slide</h3>
       {/* <p>{JSON.stringify(slide)}</p> */}
       <FormInput
         label={"Headline Copy"}
+        width="80%"
         value={slide?.headline_copy ?? ""}
         onInput={e => setSlide(s => ({ ...s, headline_copy: e.target.value }))}
       />
-      <div className="flex items-center">
-        <div className="form-control max-w-md" style={{ marginBottom: 10, display: 'flex' }}>
-          <FormInput
-            label={"Background Image Url"}
-            value={slide?.background_image_url ?? ""}
-            onInput={e => setSlide(s => ({ ...s, background_image_url: e.target.value }))}
-          />
-        </div>
+      <div className="flex items-center w-full">
+        <FormInput
+          label={"Background Image Url"}
+          width="90%"
+          value={slide?.background_image_url ?? ""}
+          onInput={e => setSlide(s => ({ ...s, background_image_url: e.target.value }))}
+        />
         {slide.background_image_url.length > 0
           ?
-          (<img className="ml-8" src={slide.background_image_url} style={{ width: 100 }} />)
+          (<img className="ml-4" src={slide.background_image_url} style={{ width: 100 }} />)
           :
           (<></>)
         }
@@ -93,9 +93,8 @@ export const SlideCreator: React.FC<{ mbInitialSlide?: SlideFormData, onDoneSett
 }
 
 
-export const CarouselEditor: React.FC<{ curSlides: SlideFormData[] }> = ({ curSlides }) => {
+export const CarouselEditor: React.FC<{ curSlides: SlideFormData[], onAddSlide: (s: SlideFormData) => void }> = ({ curSlides, onAddSlide }) => {
   const [showSlideEditor, setShowSlideEditor] = React.useState(false)
-  const [slides, setSlides] = React.useState<SlideFormData[]>(curSlides)
 
   React.useEffect(() => {
     console.log("SHOW SLIDE EDITOR?! ", showSlideEditor)
@@ -103,7 +102,7 @@ export const CarouselEditor: React.FC<{ curSlides: SlideFormData[] }> = ({ curSl
 
   return (
     <div className="flex p-8">
-      {slides.map(cs => {
+      {curSlides.map(cs => {
         return (
           <div className="flex flex-col border mr-8" style={{ width: 220, backgroundImage: `url(${cs.background_image_url})`, backgroundSize: 'cover' }}>
             {cs.store ?
@@ -127,7 +126,7 @@ export const CarouselEditor: React.FC<{ curSlides: SlideFormData[] }> = ({ curSl
           <button onClick={() => { setShowSlideEditor(false) }} className="btn btn-outline btn-small absolute right-2 top-2">x</button>
           <SlideCreator
             onDoneSettingFields={slide => {
-              setSlides(slides => ([...slides, slide]))
+              onAddSlide(slide)
               setShowSlideEditor(false)
             }}
           />
@@ -147,14 +146,15 @@ export const CarouselEditor: React.FC<{ curSlides: SlideFormData[] }> = ({ curSl
 }
 
 
-const FormInput: React.FC<{ label: string, value: string, type?: React.HTMLInputTypeAttribute, onInput: (e: React.ChangeEvent<HTMLInputElement>) => void }> = ({ label, type, value, onInput }) => {
+const FormInput: React.FC<{ label: string, value: string, width?: string, type?: React.HTMLInputTypeAttribute, onInput: (e: React.ChangeEvent<HTMLInputElement>) => void }> = ({ label, type, value, onInput, width }) => {
   return (
-    <div className="flex items-center my-8">
-      <div className="form-control max-w-md" style={{ marginBottom: 10, display: 'flex' }}>
+    <div className="flex items-center my-8 w-full">
+      <div className="form-control w-full" style={{ marginBottom: 10, display: 'flex' }}>
         <FormLabel label={label} />
         <input
           type={type ?? 'text'}
-          className="input input-bordered w-full max-w-md"
+          className="input input-bordered max-w-full"
+          style={{ width: width ?? "30%" }}
           value={value}
           onChange={e => {
             e.preventDefault()

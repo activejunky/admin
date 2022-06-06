@@ -195,6 +195,7 @@ export type HeadlessDigitalEventResponseObj = iots.TypeOf<typeof headlessDigital
 export module Modelenz {
   export const contentL = Lens.fromProp<HeadlessDigitalEvent>()('content')
   export const bannerL = Lens.fromProp<HeadlessDigitalEventContent>()('banner')
+  export const carouselL = Lens.fromProp<HeadlessDigitalEventContent>()('carousel')
   export const sectionsL = Lens.fromProp<HeadlessDigitalEventContent>()('sections') as unknown as Lens<HeadlessDigitalEventContent, readonly Section[]>
   const sectionsTraversal: Traversal<readonly Section[], Section> = fromTraversable(AR.readonlyArray)<Section>()
 
