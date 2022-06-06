@@ -173,7 +173,7 @@ const CmsSections: React.FC<{}> = ({ }) => {
         (
 
           <div style={{ width: '100%', display: 'flex', marginTop: 20, marginBottom: 20, height: 30 }}>
-            <button className="border border-stone-600 rounded-md" onClick={() => { dispatch.editModel.addAdditionalStoresSection(true) }}>
+            <button className="btn" onClick={() => { dispatch.editModel.addAdditionalStoresSection(true) }}>
               Add Additional Stores Section
             </button>
           </div>
@@ -468,8 +468,12 @@ const EditFeaturedDeals: React.FC<{ section: FeaturedDealsSection }> = ({ sectio
     <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', marginTop: 30 }}>
       <div style={{ display: 'flex', marginBottom: 20 }}>
         <h3 className="text-2xl font-bold">Featured Deals</h3>
-        <OutlineButton title="Add Featured Deal" onClick={openModal} />
+        {/* <OutlineButton title="Add Featured Deal" onClick={openModal} /> */}
+        <button className="btn btn-primary ml-4" onClick={openModal} >
+          Add Featured Deal
+        </button>
       </div>
+
 
 
       <div style={{ display: 'flex', flexDirection: 'row', width: '100%', flexWrap: 'wrap' }}>
@@ -567,7 +571,7 @@ const SectionContainer: React.FC<React.PropsWithChildren<{ onRemove?: () => void
         (
 
           <div style={{ width: '100%', display: 'flex', justifyContent: 'flex-end' }}>
-            <button onClick={onRemove}>Remove Section</button>
+            <button className="btn btn-outline" onClick={onRemove}>Remove Section</button>
           </div>
         )
         :

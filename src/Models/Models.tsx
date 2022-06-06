@@ -53,24 +53,22 @@ type DealHandoff = iots.TypeOf<typeof dealHandoffT>
 
 // *** CONTENT STUFF *****\\
 
-/*
-export interface Slide {
+export interface SlideData {
   readonly id: number
   readonly background_image_url: string,
   readonly main_copy: string,
-  readonly headline_copy: string,
+  headline_copy: string,
   readonly content_position_id: number,
   readonly text_color_id: number,
   readonly display_order: number,
   readonly deal_code: string,
   readonly deal_id: number,
-  readonly store: SimpleStore | null,
+  readonly store: AJStore,
   readonly button_url: string
   readonly store_id: number
   readonly start_at: string
   readonly end_at: string
 }
-*/
 
 const bannerContentBaseT = iots.type({
   title: iots.string,

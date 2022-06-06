@@ -17,6 +17,7 @@
     "@types/node": "^16.11.33",
     "@types/react": "^18.0.8",
     "@types/react-dom": "^18.0.3",
+    "daisyui": "^2.15.2",
     "env-cmd": "^10.1.0",
     "fp-ts": "^2.12.1",
     "fp-ts-std": "^0.14.2",
