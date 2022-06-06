@@ -2,12 +2,15 @@ import { Lens } from 'monocle-ts'
 import * as React from 'react'
 import EdiText from 'react-editext'
 import { SlideData, SlideFormData } from '../../Models/Models'
+import Async from 'react-select/async'
+import { SearchAndAddStoreModalContent, StoreFinder } from '../SearchAndAddStore'
 
 
 const emptySlideFormData: SlideFormData = {
   headline_copy: "",
   background_image_url: "",
-  text_color_id: 1
+  text_color_id: 1,
+  store: null
 }
 
 
@@ -25,26 +28,28 @@ export const SlideCreator: React.FC<{ mbInitialSlide?: SlideFormData, onDoneSett
       />
       <div className="flex items-center">
         <div className="form-control max-w-md" style={{ marginBottom: 10, display: 'flex' }}>
-          <label className="label" style={{ display: 'flex', alignItems: 'center', marginRight: 10, fontWeight: 'bold' }}>
-            <span className="label-text">Background Image Url</span>
-          </label>
-          <input
-            type="text"
-            className="input input-bordered w-full max-w-md"
-            onChange={e => {
-              e.preventDefault()
-              setSlide(cs => ({
-                ...cs, background_image_url: e.target.value
-              }))
-            }}
+          <FormInput
+            label={"Background Image Url"}
+            value={slide?.background_image_url ?? ""}
+            onInput={e => setSlide(s => ({ ...s, background_image_url: e.target.value }))}
           />
         </div>
         {slide.background_image_url.length > 0
           ?
-          (<img className="ml-8" src={slide.background_image_url} />)
+          (<img className="ml-8" src={slide.background_image_url} style={{ width: 100 }} />)
           :
           (<></>)
         }
+      </div>
+      <div style={{ height: 300 }}>
+        <FormLabel label="Store" />
+        <div className="flex w-4/6">
+          <StoreFinder
+            onSelect={store => {
+              setSlide(s => ({ ...s, store }))
+            }}
+          />
+        </div>
       </div>
       {/* <label htmlFor="my-modal" className="btn modal-button">open modal</label>
 
@@ -64,9 +69,14 @@ export const SlideCreator: React.FC<{ mbInitialSlide?: SlideFormData, onDoneSett
         </label>
         <EdiText type="text" value={savedCashbackStr} onSave={setCashbackText} />
       </div> */}
-      <button className="btn btn-primary" type="button" onClick={() => { onDoneSettingFields(slide) }} >
-        Add
-      </button>
+      <div className="w-full flex justify-end">
+        <button className="btn btn-primary w-2/6" type="button" onClick={() => {
+          onDoneSettingFields(slide)
+          setSlide(emptySlideFormData)
+        }} >
+          Add Slide
+        </button>
+      </div>
     </div>
 
   )
@@ -75,6 +85,14 @@ export const SlideCreator: React.FC<{ mbInitialSlide?: SlideFormData, onDoneSett
 
 export const CarouselEditor: React.FC<{ curSlides: SlideFormData[] }> = ({ curSlides }) => {
   const [showSlideEditor, setShowSlideEditor] = React.useState(false)
+  const [slides, setSlides] = React.useState<SlideFormData[]>(curSlides)
+  const [curEditSlide, setCurEditSlide] = React.useState<null | SlideFormData>(null)
+
+  React.useEffect(() => {
+    if (showSlideEditor) {
+      setCurEditSlide(null)
+    }
+  }, [showSlideEditor])
 
   React.useEffect(() => {
     console.log("SHOW SLIDE EDITOR?! ", showSlideEditor)
@@ -82,22 +100,37 @@ export const CarouselEditor: React.FC<{ curSlides: SlideFormData[] }> = ({ curSl
 
   return (
     <div className="flex p-8">
-      {curSlides.map(cs => {
+      {slides.map(cs => {
         return (
-          <div>
+          <div className="flex flex-col border mr-8" style={{ width: 220, backgroundImage: `url(${cs.background_image_url})`, backgroundSize: 'cover' }}>
+            {cs.store ?
+              (
+                <img src={cs.store.image_url} style={{ height: 30 }} />
+              )
+              :
+              (<></>)
+            }
             <h3>{cs.headline_copy}</h3>
+            {/* <img src={cs.background_image_url} /> */}
           </div>
         )
       })}
-      <button type="button" className="w-64 h-64 items-center justify-center border" onClick={() => { setShowSlideEditor(b => !b) }} >Add Slide</button>
-      {/* <div className={"modal".concat(showSlideEditor ? " modal-open" : "")}> */}
-      <div className={"modal modal-open"}>
-        <div className="modal-box">
+      <button type="button" className="w-64 h-64 items-center justify-center border" onClick={() => { setShowSlideEditor(b => !b) }} >
+        Add Slide
+      </button>
+      <div className={"modal".concat(showSlideEditor ? " modal-open" : "")}>
+        {/* <div className={"modal modal-open"}> */}
+        <div className="modal-box max-w-screen-lg">
           <button onClick={() => { setShowSlideEditor(false) }} className="btn btn-outline btn-small absolute right-2 top-2">x</button>
-          <SlideCreator onDoneSettingFields={_ => { setShowSlideEditor(false) }} />
-          <div className="modal-action">
+          <SlideCreator
+            onDoneSettingFields={slide => {
+              setSlides(slides => ([...slides, slide]))
+              setShowSlideEditor(false)
+            }}
+          />
+          {/* <div className="modal-action">
             <label htmlFor="my-modal" className="btn">Add Slide</label>
-          </div>
+          </div> */}
         </div>
       </div>
       {/* <div style={{ marginBottom: 10, display: 'flex' }}>
@@ -115,9 +148,7 @@ const FormInput: React.FC<{ label: string, value: string, onInput: (e: React.Cha
   return (
     <div className="flex items-center my-8">
       <div className="form-control max-w-md" style={{ marginBottom: 10, display: 'flex' }}>
-        <label className="label" style={{ display: 'flex', alignItems: 'center', marginRight: 10, fontWeight: 'bold' }}>
-          <span className="label-text">{label}</span>
-        </label>
+        <FormLabel label={label} />
         <input
           type="text"
           className="input input-bordered w-full max-w-md"
@@ -129,5 +160,14 @@ const FormInput: React.FC<{ label: string, value: string, onInput: (e: React.Cha
         />
       </div>
     </div>
+  )
+}
+
+const FormLabel: React.FC<{ label: string }> = ({ label }) => {
+  return (
+
+    <label className="label" style={{ display: 'flex', alignItems: 'center', marginRight: 10, fontWeight: 'bold' }}>
+      <span className="label-text">{label}</span>
+    </label>
   )
 }

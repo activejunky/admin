@@ -57,7 +57,8 @@ type DealHandoff = iots.TypeOf<typeof dealHandoffT>
 const slideFormDataT = iots.type({
   headline_copy: iots.string,
   background_image_url: iots.string,
-  text_color_id: iots.number
+  text_color_id: iots.number,
+  store: iots.union([ajStoreT, iots.null])
 })
 
 export type SlideFormData = iots.TypeOf<typeof slideFormDataT>
