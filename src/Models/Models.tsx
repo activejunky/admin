@@ -272,3 +272,21 @@ export function colorCodeToColor(code: number): string {
 
   return 'white'
 }
+
+
+
+export function carouselToBanner(carousel: SlideFormData[]): BannerContent | null {
+  const fs = carousel[0]
+  if (fs) {
+    return {
+      title: fs.headline_copy,
+      headline_copy: fs.headline_copy,
+      text_color_id: fs.text_color_id,
+      backgroundImageUrl: fs.background_image_url,
+      cashBackString: "",
+      handoff: { tag: 'storeHandoff', store: fs.store! },
+    }
+  }
+
+  return null
+}

@@ -11,7 +11,7 @@ import * as Op from 'monocle-ts/lib/Optional'
 import createCachedSelector from 're-reselect'
 import { Backend } from '../Backend/Api'
 import { HandoffSelect } from '../Components/HandoffModal'
-import { AdditionalStoresSection, AJStore, BannerContent, Deal, FeaturedDealsSection, Handoff, HeadlessDigitalEvent, HeadlessDigitalEventContent, HeadlessDigitalEventResponseObj, isAdditionalStoresSection, isKnownSection, Modelenz, Section, SlideFormData } from '../Models/Models'
+import { AdditionalStoresSection, AJStore, BannerContent, carouselToBanner, Deal, FeaturedDealsSection, Handoff, HeadlessDigitalEvent, HeadlessDigitalEventContent, HeadlessDigitalEventResponseObj, isAdditionalStoresSection, isKnownSection, Modelenz, Section, SlideFormData } from '../Models/Models'
 
 export type PageState = {
   de: HeadlessDigitalEvent
@@ -105,7 +105,14 @@ export const editModel = createModel<RootModel>()({
       return state
     },
     setCarousel(state, payload: SlideFormData[]) {
-      return pipe(state, deCarouselL.set(payload))
+      const withCarousel = pipe(state, deCarouselL.set(payload))
+      const mbBanner = carouselToBanner(payload)
+      if (mbBanner) {
+        const withBanner = pipe(withCarousel, deBannerL.set(mbBanner))
+        return withBanner
+      }
+
+      return withCarousel
     },
     setSection(state, payload: { sectionId: number, section: Section }) {
       const indexL = Op.index(payload.sectionId)(deSectionsL.asOptional())

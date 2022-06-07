@@ -14,7 +14,6 @@ const emptySlideFormData: SlideFormData = {
 export const SlideCreator: React.FC<{ mbInitialSlide?: SlideFormData, onDoneSettingFields: (sfd: SlideFormData) => void }> = ({ mbInitialSlide, onDoneSettingFields }) => {
   const [slide, setSlide] = React.useState<SlideFormData>(mbInitialSlide ?? emptySlideFormData)
 
-
   return (
     <div className="w-full">
       <h3 className="text-2xl font-bold mb-10">Slide</h3>
@@ -49,6 +48,16 @@ export const SlideCreator: React.FC<{ mbInitialSlide?: SlideFormData, onDoneSett
             }}
           />
         </div>
+        {/* <div className="flex items-center">
+          <div className="form-control max-w-md" style={{ marginBottom: 10, display: 'flex' }}>
+            <FormInput
+              label={"Deal Id? (optional)"}
+              value={slide?.text_color_id ? slide.text_color_id.toString() : ""}
+              onInput={e => setSlide(s => ({ ...s, text_color_id: parseInt(e.target.value) }))}
+            />
+          </div>
+          <div className="ml-8" style={{ width: 40, height: 40, backgroundColor: `${colorCodeToColor(slide.text_color_id)}`, border: '1px solid black' }} />
+        </div> */}
         <div className="flex items-center">
           <div className="form-control max-w-md" style={{ marginBottom: 10, display: 'flex' }}>
             <FormInput
