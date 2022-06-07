@@ -1,5 +1,6 @@
 import * as React from 'react'
-import { colorCodeToColor, SlideFormData } from '../../Models/Models'
+import { Backend } from '../../Backend/Api'
+import { colorCodeToColor, Deal, SlideFormData } from '../../Models/Models'
 import { StoreFinder } from '../SearchAndAddStore'
 
 
@@ -13,6 +14,15 @@ const emptySlideFormData: SlideFormData = {
 
 export const SlideCreator: React.FC<{ mbInitialSlide?: SlideFormData, onDoneSettingFields: (sfd: SlideFormData) => void }> = ({ mbInitialSlide, onDoneSettingFields }) => {
   const [slide, setSlide] = React.useState<SlideFormData>(mbInitialSlide ?? emptySlideFormData)
+  const [mbMatchingDeal, setMbMatchingDeal] = React.useState<Deal | null>(null)
+
+  React.useEffect(() => {
+    if (slide.dealId) {
+      Backend.getDeal({ dealId: slide.dealId }).then(d => {
+        setMbMatchingDeal(d)
+      })
+    }
+  }, [slide])
 
   return (
     <div className="w-full">
@@ -48,16 +58,28 @@ export const SlideCreator: React.FC<{ mbInitialSlide?: SlideFormData, onDoneSett
             }}
           />
         </div>
-        {/* <div className="flex items-center">
-          <div className="form-control max-w-md" style={{ marginBottom: 10, display: 'flex' }}>
+        <div className="flex items-center w-full">
+          <div className="form-control max-w-full" style={{ marginBottom: 10, display: 'flex' }}>
             <FormInput
+              type="text"
+              width="80%"
               label={"Deal Id? (optional)"}
-              value={slide?.text_color_id ? slide.text_color_id.toString() : ""}
-              onInput={e => setSlide(s => ({ ...s, text_color_id: parseInt(e.target.value) }))}
+              value={slide?.dealId ? slide.dealId.toString() : ""}
+              onInput={e => setSlide(s => ({ ...s, dealId: parseInt(e.target.value) }))}
             />
           </div>
-          <div className="ml-8" style={{ width: 40, height: 40, backgroundColor: `${colorCodeToColor(slide.text_color_id)}`, border: '1px solid black' }} />
-        </div> */}
+          {mbMatchingDeal
+            ?
+            (
+              <div>
+                <h3>{mbMatchingDeal.title}</h3>
+                <img src={mbMatchingDeal.store.image_url} style={{ width: 30 }} />
+              </div>
+            )
+            :
+            (<></>)
+          }
+        </div>
         <div className="flex items-center">
           <div className="form-control max-w-md" style={{ marginBottom: 10, display: 'flex' }}>
             <FormInput

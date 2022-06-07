@@ -54,12 +54,17 @@ type DealHandoff = iots.TypeOf<typeof dealHandoffT>
 
 // *** CONTENT STUFF *****\\
 
-const slideFormDataT = iots.type({
-  headline_copy: iots.string,
-  background_image_url: iots.string,
-  text_color_id: iots.number,
-  store: iots.union([ajStoreT, iots.null])
-})
+const slideFormDataT = iots.intersection([
+  iots.type({
+    headline_copy: iots.string,
+    background_image_url: iots.string,
+    text_color_id: iots.number,
+    store: iots.union([ajStoreT, iots.null]),
+  }),
+  iots.partial({
+    dealId: iots.number
+  })
+])
 
 export type SlideFormData = iots.TypeOf<typeof slideFormDataT>
 
