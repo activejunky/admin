@@ -170,10 +170,17 @@ export const CarouselEditor: React.FC<{ curSlides: SlideFormData[], onChangeSlid
               <SlideCreator
                 mbInitialSlide={curEditSlide ?? emptySlideFormData}
                 onDoneSettingFields={slide => {
-                  const fz = indexArray<SlideFormData>().index(0)
-                  const newSlides = curEditSlide ? pipe(fz.set(slide)(curSlides), fromReadonly) : [...curSlides, slide]
-                  console.log("NEW SLIDES ! ", newSlides.map(s => s.headline_copy))
-                  onChangeSlides(newSlides)
+                  console.log("CUR EDIT SLIDE ! ", curEditSlide)
+                  if (curEditSlide) {
+                    const match = curSlides.findIndex(cs => cs.headline_copy === curEditSlide.headline_copy)
+                    console.log("MATCH! ", match)
+                    if (match !== -1) {
+                      const lnz = indexArray<SlideFormData>().index(match)
+                      onChangeSlides(pipe(lnz.set(slide)(curSlides), fromReadonly))
+                    }
+                  } else {
+                    onChangeSlides([...curSlides, slide])
+                  }
                   setShowSlideEditor(false)
                 }}
               />
