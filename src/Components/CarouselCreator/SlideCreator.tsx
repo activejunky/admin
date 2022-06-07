@@ -1,3 +1,6 @@
+import { fromReadonly } from 'fp-ts-std/Array'
+import { pipe } from 'fp-ts/lib/function'
+import { indexArray } from 'monocle-ts/lib/Ix'
 import * as React from 'react'
 import { Backend } from '../../Backend/Api'
 import { colorCodeToColor, Deal, SlideFormData } from '../../Models/Models'
@@ -115,7 +118,7 @@ export const SlideCreator: React.FC<{ mbInitialSlide?: SlideFormData, onDoneSett
           onDoneSettingFields(slide)
           setSlide(emptySlideFormData)
         }} >
-          Add Slide
+          Set Slide
         </button>
       </div>
     </div>
@@ -124,8 +127,9 @@ export const SlideCreator: React.FC<{ mbInitialSlide?: SlideFormData, onDoneSett
 }
 
 
-export const CarouselEditor: React.FC<{ curSlides: SlideFormData[], onAddSlide: (s: SlideFormData) => void }> = ({ curSlides, onAddSlide }) => {
+export const CarouselEditor: React.FC<{ curSlides: SlideFormData[], onChangeSlides: (s: SlideFormData[]) => void }> = ({ curSlides, onChangeSlides }) => {
   const [showSlideEditor, setShowSlideEditor] = React.useState(false)
+  const [curEditSlide, setCurEditSlide] = React.useState<null | SlideFormData>(null)
 
   React.useEffect(() => {
     console.log("SHOW SLIDE EDITOR?! ", showSlideEditor)
@@ -135,7 +139,9 @@ export const CarouselEditor: React.FC<{ curSlides: SlideFormData[], onAddSlide: 
     <div className="flex p-8">
       {curSlides.map(cs => {
         return (
-          <div className="flex flex-col border mr-8" style={{ width: 220, backgroundImage: `url(${cs.background_image_url})`, backgroundSize: 'cover' }}>
+          <div
+            onClick={() => { setShowSlideEditor(true); setCurEditSlide(cs) }}
+            className="flex flex-col border mr-8" style={{ width: 220, backgroundImage: `url(${cs.background_image_url})`, backgroundSize: 'cover' }}>
             {cs.store ?
               (
                 <img src={cs.store.image_url} style={{ height: 30 }} />
@@ -148,19 +154,33 @@ export const CarouselEditor: React.FC<{ curSlides: SlideFormData[], onAddSlide: 
           </div>
         )
       })}
-      <button type="button" className="w-64 h-64 items-center justify-center border" onClick={() => { setShowSlideEditor(b => !b) }} >
+      <button
+        type="button" className="w-64 h-64 items-center justify-center border"
+        onClick={() => { setCurEditSlide(null); setShowSlideEditor(true) }}
+      >
         Add Slide
       </button>
       <div className={"modal".concat(showSlideEditor ? " modal-open" : "")}>
         {/* <div className={"modal modal-open"}> */}
         <div className="modal-box max-w-screen-lg">
           <button onClick={() => { setShowSlideEditor(false) }} className="btn btn-outline btn-small absolute right-2 top-2">x</button>
-          <SlideCreator
-            onDoneSettingFields={slide => {
-              onAddSlide(slide)
-              setShowSlideEditor(false)
-            }}
-          />
+          {showSlideEditor
+            ?
+            (
+              <SlideCreator
+                mbInitialSlide={curEditSlide ?? emptySlideFormData}
+                onDoneSettingFields={slide => {
+                  const fz = indexArray<SlideFormData>().index(0)
+                  const newSlides = curEditSlide ? pipe(fz.set(slide)(curSlides), fromReadonly) : [...curSlides, slide]
+                  console.log("NEW SLIDES ! ", newSlides.map(s => s.headline_copy))
+                  onChangeSlides(newSlides)
+                  setShowSlideEditor(false)
+                }}
+              />
+            )
+            :
+            (<></>)
+          }
           {/* <div className="modal-action">
             <label htmlFor="my-modal" className="btn">Add Slide</label>
           </div> */}

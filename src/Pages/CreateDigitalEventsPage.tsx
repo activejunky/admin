@@ -139,9 +139,8 @@ const CarouselEditorSection: React.FC<{}> = ({ }) => {
     <SectionContainer>
       <CarouselEditor
         curSlides={carousel ?? []}
-        onAddSlide={slide => {
-          const newCarousel = carousel ? [...carousel, slide] : [slide]
-          dispatch.editModel.setCarousel(newCarousel)
+        onChangeSlides={slides => {
+          dispatch.editModel.setCarousel(slides)
         }}
       />
     </SectionContainer>
