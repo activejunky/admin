@@ -128,7 +128,7 @@ export const SlideCreator: React.FC<{ mbInitialSlide?: SlideFormData, onDoneSett
 }
 
 
-export const CarouselEditor: React.FC<{ curSlides: SlideFormData[], onChangeSlides: (s: SlideFormData[]) => void }> = ({ curSlides, onChangeSlides }) => {
+export const CarouselEditor: React.FC<{ curSlides: SlideFormData[], onChangeSlides: (s: SlideFormData[]) => void, onRemove: (slide: SlideFormData) => void }> = ({ curSlides, onChangeSlides, onRemove }) => {
   const [showSlideEditor, setShowSlideEditor] = React.useState(false)
   const [curEditSlide, setCurEditSlide] = React.useState<null | SlideFormData>(null)
 
@@ -141,16 +141,37 @@ export const CarouselEditor: React.FC<{ curSlides: SlideFormData[], onChangeSlid
       {curSlides.map(cs => {
         return (
           <div
-            onClick={() => { setShowSlideEditor(true); setCurEditSlide(cs) }}
-            className="flex flex-col border mr-8" style={{ width: 220, backgroundImage: `url(${cs.background_image_url})`, backgroundSize: 'cover' }}>
-            {cs.store ?
-              (
-                <img src={cs.store.image_url} style={{ height: 30 }} />
-              )
-              :
-              (<></>)
-            }
-            <h3 style={{ color: `${colorCodeToColor(cs.text_color_id)}` }}>{cs.headline_copy}</h3>
+            className="relative flex flex-col border  mr-8"
+            style={{ width: 220, backgroundImage: `url(${cs.background_image_url})`, backgroundSize: 'cover' }}
+          >
+            <div
+              onClick={() => { setShowSlideEditor(true); setCurEditSlide(cs) }}
+              className="flex flex-col cursor-pointer w-full h-full"
+            >
+              {cs.store ?
+                (
+                  <img src={cs.store.image_url} style={{ height: 30 }} />
+                )
+                :
+                (<></>)
+              }
+              <h3 style={{ color: `${colorCodeToColor(cs.text_color_id)}` }}>{cs.headline_copy}</h3>
+            </div>
+            <div className="z-20 flex  justify-between absolute bottom-0 left-0 right-0" style={{ height: 30 }}>
+              <button
+                className="flex justify-center items-center bg-white"
+                style={{ height: 20, width: 20, border: '1px dashed black', borderRadius: 10 }}
+                onClick={() => { onRemove(cs) }}
+              >
+                X
+              </button>
+              {/* <button
+                className="btn btn-info"
+                onClick={() => { setCurEditSlide(cs); setShowSlideEditor(true) }}
+              >
+                Edit
+              </button> */}
+            </div>
             {/* <img src={cs.background_image_url} /> */}
           </div>
         )

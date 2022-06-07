@@ -21,6 +21,7 @@ import { onErrorResumeNext } from 'rxjs'
 import { DealTile } from '../Components/DealView'
 import { CarouselEditor, SlideCreator } from '../Components/CarouselCreator/SlideCreator'
 import { Root } from 'react-dom/client'
+import { unsafeDeleteAt } from 'fp-ts/lib/Array'
 
 const customStyles = {
   content: {
@@ -143,6 +144,12 @@ const CarouselEditorSection: React.FC<{}> = ({ }) => {
           curSlides={carousel ?? []}
           onChangeSlides={slides => {
             dispatch.editModel.setCarousel(slides)
+          }}
+          onRemove={slide => {
+            const match = carousel?.findIndex(ss => ss.headline_copy === slide.headline_copy)
+            if (carousel && match && match !== -1) {
+              dispatch.editModel.setCarousel(unsafeDeleteAt(match, carousel))
+            }
           }}
         />
       </div>
