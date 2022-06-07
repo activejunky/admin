@@ -56,6 +56,7 @@ type DealHandoff = iots.TypeOf<typeof dealHandoffT>
 
 const slideFormDataT = iots.intersection([
   iots.type({
+    _tag: iots.literal('store'),
     headline_copy: iots.string,
     background_image_url: iots.string,
     text_color_id: iots.number,
@@ -289,7 +290,7 @@ export function carouselToBanner(carousel: SlideFormData[]): BannerContent | nul
       text_color_id: fs.text_color_id,
       backgroundImageUrl: fs.background_image_url,
       cashBackString: "",
-      handoff: { tag: 'storeHandoff', store: fs.store! },
+      handoff: fs.dealId ? { tag: 'dealHandoff', dealId: fs.dealId, store: fs.store! } : { tag: 'storeHandoff', store: fs.store! },
     }
   }
 

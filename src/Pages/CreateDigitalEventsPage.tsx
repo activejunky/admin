@@ -137,12 +137,15 @@ const CarouselEditorSection: React.FC<{}> = ({ }) => {
 
   return (
     <SectionContainer>
-      <CarouselEditor
-        curSlides={carousel ?? []}
-        onChangeSlides={slides => {
-          dispatch.editModel.setCarousel(slides)
-        }}
-      />
+      <div className="flex flex-col w-full items-start">
+        <h3 className="text-2xl font-bold">Carousel</h3>
+        <CarouselEditor
+          curSlides={carousel ?? []}
+          onChangeSlides={slides => {
+            dispatch.editModel.setCarousel(slides)
+          }}
+        />
+      </div>
     </SectionContainer>
   )
 }

@@ -8,6 +8,7 @@ import { StoreFinder } from '../SearchAndAddStore'
 
 
 const emptySlideFormData: SlideFormData = {
+  _tag: 'store',
   headline_copy: "",
   background_image_url: "",
   text_color_id: 1,
