@@ -17,11 +17,13 @@
     "@types/node": "^16.11.33",
     "@types/react": "^18.0.8",
     "@types/react-dom": "^18.0.3",
+    "daisyui": "^2.15.2",
     "env-cmd": "^10.1.0",
     "fp-ts": "^2.12.1",
     "fp-ts-std": "^0.14.2",
     "immer": "^9.0.12",
     "io-ts": "^2.2.16",
+    "io-ts-derive-class": "0.0.30",
     "io-ts-types": "^0.5.16",
     "monocle-ts": "^2.3.13",
     "observable-hooks": "^4.2.0",
@@ -72,6 +74,7 @@
     ]
   },
   "devDependencies": {
+    "@tailwindcss/typography": "^0.5.2",
     "@types/react-copy-to-clipboard": "^5.0.2",
     "@types/react-modal": "^3.13.1",
     "autoprefixer": "^10.4.7",

@@ -17,6 +17,7 @@ import * as iotst from 'io-ts-types'
 import * as AR from 'fp-ts/ReadonlyArray'
 import { number } from "fp-ts-std"
 import { indexReadonlyArray } from "monocle-ts/lib/Ix"
+import * as tdc from 'io-ts-derive-class'
 
 
 const ajStoreT = iots.type({
@@ -53,24 +54,37 @@ type DealHandoff = iots.TypeOf<typeof dealHandoffT>
 
 // *** CONTENT STUFF *****\\
 
-/*
-export interface Slide {
+const slideFormDataT = iots.intersection([
+  iots.type({
+    _tag: iots.literal('store'),
+    headline_copy: iots.string,
+    background_image_url: iots.string,
+    text_color_id: iots.number,
+    store: iots.union([ajStoreT, iots.null]),
+  }),
+  iots.partial({
+    dealId: iots.number
+  })
+])
+
+export type SlideFormData = iots.TypeOf<typeof slideFormDataT>
+
+export interface SlideData {
   readonly id: number
   readonly background_image_url: string,
   readonly main_copy: string,
-  readonly headline_copy: string,
+  headline_copy: string,
   readonly content_position_id: number,
   readonly text_color_id: number,
   readonly display_order: number,
   readonly deal_code: string,
   readonly deal_id: number,
-  readonly store: SimpleStore | null,
+  readonly store: AJStore,
   readonly button_url: string
   readonly store_id: number
   readonly start_at: string
   readonly end_at: string
 }
-*/
 
 const bannerContentBaseT = iots.type({
   title: iots.string,
@@ -151,20 +165,19 @@ export function typeFilter<T, R extends T>(a: T[], f: (e: T) => e is R): R[] {
 }
 
 
-const headlessDigitalEventContentT = iots.type({
+const headlessDigitalEventContentBaseT = iots.type({
   pageTitle: iots.string,
   banner: bannerContentT,
-  sections: iots.array(sectionT)
+  sections: iots.array(sectionT),
 })
-export type HeadlessDigitalEventContent = {
-  pageTitle: string
-  banner: BannerContent
-  sections: Section[]
-  // featuredStores: AJStore[]
-  // additionalStores: null | { title: string, stores: AJStore[] }
-  // featuredDeals: Deal[]
-}
 
+const carouselFieldT = iots.partial({
+  carousel: iots.array(slideFormDataT)
+})
+
+const headlessDigitalEventContentT = iots.intersection([headlessDigitalEventContentBaseT, carouselFieldT])
+
+export type HeadlessDigitalEventContent = iots.TypeOf<typeof headlessDigitalEventContentT>
 export interface HeadlessDigitalEvent {
   id: string
   title: string
@@ -188,6 +201,7 @@ export type HeadlessDigitalEventResponseObj = iots.TypeOf<typeof headlessDigital
 export module Modelenz {
   export const contentL = Lens.fromProp<HeadlessDigitalEvent>()('content')
   export const bannerL = Lens.fromProp<HeadlessDigitalEventContent>()('banner')
+  export const carouselL = Lens.fromProp<HeadlessDigitalEventContent>()('carousel')
   export const sectionsL = Lens.fromProp<HeadlessDigitalEventContent>()('sections') as unknown as Lens<HeadlessDigitalEventContent, readonly Section[]>
   const sectionsTraversal: Traversal<readonly Section[], Section> = fromTraversable(AR.readonlyArray)<Section>()
 
@@ -254,4 +268,31 @@ export module Modelenz {
 
   export const storeHandoffP = new Prism<Handoff, StoreHandoff>(s => s.tag === 'storeHandoff' ? O.some(s) : O.none, s => s)
   export const dealHandoffP = new Prism<Handoff, DealHandoff>(s => s.tag === 'dealHandoff' ? O.some(s) : O.none, s => s)
+}
+
+
+export function colorCodeToColor(code: number): string {
+  if (code === 0) {
+    return 'black'
+  }
+
+  return 'white'
+}
+
+
+
+export function carouselToBanner(carousel: SlideFormData[]): BannerContent | null {
+  const fs = carousel[0]
+  if (fs) {
+    return {
+      title: fs.headline_copy,
+      headline_copy: fs.headline_copy,
+      text_color_id: fs.text_color_id,
+      backgroundImageUrl: fs.background_image_url,
+      cashBackString: "",
+      handoff: fs.dealId ? { tag: 'dealHandoff', dealId: fs.dealId, store: fs.store! } : { tag: 'storeHandoff', store: fs.store! },
+    }
+  }
+
+  return null
 }

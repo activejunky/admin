@@ -19,6 +19,9 @@ import { SearchAndAddStoreModalContent } from '../Components/SearchAndAddStore'
 import { StoreIcon } from '../Views/StoreIcon'
 import { onErrorResumeNext } from 'rxjs'
 import { DealTile } from '../Components/DealView'
+import { CarouselEditor, SlideCreator } from '../Components/CarouselCreator/SlideCreator'
+import { Root } from 'react-dom/client'
+import { unsafeDeleteAt } from 'fp-ts/lib/Array'
 
 const customStyles = {
   content: {
@@ -119,12 +122,38 @@ const AllSections: React.FC<{}> = ({ }) => {
         <SectionContainer>
           <EditBanner />
         </SectionContainer>
+        <CarouselEditorSection />
         {/* <SectionContainer>
           <EditFeaturedStores />
         </SectionContainer> */}
         <CmsSections />
       </LoadingOverlay>
     </>
+  )
+}
+
+const CarouselEditorSection: React.FC<{}> = ({ }) => {
+  const carousel = useSelector((state: RootState) => state.editModel.de.content.carousel)
+  const dispatch = useDispatch<Dispatch>()
+
+  return (
+    <SectionContainer>
+      <div className="flex flex-col w-full items-start">
+        <h3 className="text-2xl font-bold">Carousel</h3>
+        <CarouselEditor
+          curSlides={carousel ?? []}
+          onChangeSlides={slides => {
+            dispatch.editModel.setCarousel(slides)
+          }}
+          onRemove={slide => {
+            const match = carousel?.findIndex(ss => ss.headline_copy === slide.headline_copy)
+            if (carousel && match && match !== -1) {
+              dispatch.editModel.setCarousel(unsafeDeleteAt(match, carousel))
+            }
+          }}
+        />
+      </div>
+    </SectionContainer>
   )
 }
 
@@ -173,7 +202,7 @@ const CmsSections: React.FC<{}> = ({ }) => {
         (
 
           <div style={{ width: '100%', display: 'flex', marginTop: 20, marginBottom: 20, height: 30 }}>
-            <button className="border border-stone-600 rounded-md" onClick={() => { dispatch.editModel.addAdditionalStoresSection(true) }}>
+            <button className="btn" onClick={() => { dispatch.editModel.addAdditionalStoresSection(true) }}>
               Add Additional Stores Section
             </button>
           </div>
@@ -468,9 +497,11 @@ const EditFeaturedDeals: React.FC<{ section: FeaturedDealsSection }> = ({ sectio
     <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', marginTop: 30 }}>
       <div style={{ display: 'flex', marginBottom: 20 }}>
         <h3 className="text-2xl font-bold">Featured Deals</h3>
-        <OutlineButton title="Add Featured Deal" onClick={openModal} />
+        {/* <OutlineButton title="Add Featured Deal" onClick={openModal} /> */}
+        <button className="btn btn-primary ml-4" onClick={openModal} >
+          Add Featured Deal
+        </button>
       </div>
-
 
       <div style={{ display: 'flex', flexDirection: 'row', width: '100%', flexWrap: 'wrap' }}>
         {deals.map(d => {
@@ -567,7 +598,7 @@ const SectionContainer: React.FC<React.PropsWithChildren<{ onRemove?: () => void
         (
 
           <div style={{ width: '100%', display: 'flex', justifyContent: 'flex-end' }}>
-            <button onClick={onRemove}>Remove Section</button>
+            <button className="btn btn-outline" onClick={onRemove}>Remove Section</button>
           </div>
         )
         :
