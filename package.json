@@ -26,6 +26,7 @@
     "io-ts-derive-class": "0.0.30",
     "io-ts-types": "^0.5.16",
     "monocle-ts": "^2.3.13",
+    "newtype-ts": "^0.3.5",
     "observable-hooks": "^4.2.0",
     "picnic": "^7.1.0",
     "re-reselect": "^4.0.0",

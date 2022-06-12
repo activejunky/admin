@@ -1,23 +1,14 @@
-import { array, readonlyArray } from "fp-ts"
-import produce from "immer"
-import { fromTraversable, iso, At, Lens, Prism, Traversal } from 'monocle-ts'
-import * as Op from 'monocle-ts/lib/Optional'
-import * as OpI from 'monocle-ts/lib/index'
-import * as O from 'fp-ts/Option'
-import * as A from 'fp-ts/Array'
-import { Traversable, TraversableComposition11 } from "fp-ts/lib/Traversable"
-import * as IdxRA from 'monocle-ts/Index/ReadonlyArray'
-import { first } from "rxjs"
 import { pipe } from "fp-ts/lib/function"
-import * as L from 'monocle-ts/Lens'
-import * as isom from 'monocle-ts/Iso'
-import * as Trav from 'monocle-ts/Traversal'
-import * as iots from 'io-ts'
-import * as iotst from 'io-ts-types'
+import * as O from 'fp-ts/Option'
 import * as AR from 'fp-ts/ReadonlyArray'
-import { number } from "fp-ts-std"
+import * as iots from 'io-ts'
+import * as OpI from 'monocle-ts/lib/index'
+import { fromTraversable, Lens, Prism, Traversal } from 'monocle-ts'
+import * as Op from 'monocle-ts/lib/Optional'
 import { indexReadonlyArray } from "monocle-ts/lib/Ix"
-import * as tdc from 'io-ts-derive-class'
+import { fromNullable } from "io-ts-types"
+import { unsafeUpdateAt } from "fp-ts/lib/Array"
+import { At } from "monocle-ts/lib/At"
 
 
 const ajStoreT = iots.type({
@@ -125,7 +116,8 @@ export type FeaturedDealsSection = iots.TypeOf<typeof featuredDealsSectionT>
 export const additionalStoresSectionT = iots.type({
   tag: iots.literal('ADDITIONAL_STORES'),
   title: iots.string,
-  stores: iots.array(ajStoreT)
+  stores: iots.array(ajStoreT),
+  storeRows: iots.array(iots.array(ajStoreT))
 })
 
 export type AdditionalStoresSection = iots.TypeOf<typeof additionalStoresSectionT>
@@ -177,6 +169,14 @@ const carouselFieldT = iots.partial({
 
 const headlessDigitalEventContentT = iots.intersection([headlessDigitalEventContentBaseT, carouselFieldT])
 
+const headlessDigitalEventContentRespBaseT = iots.type({
+  pageTitle: iots.string,
+  banner: bannerContentT,
+  sections: iots.array(sectionT),
+})
+
+const headlessDigitalEventContentRespT = iots.intersection([headlessDigitalEventContentBaseT, carouselFieldT])
+
 export type HeadlessDigitalEventContent = iots.TypeOf<typeof headlessDigitalEventContentT>
 export interface HeadlessDigitalEvent {
   id: string
@@ -198,16 +198,20 @@ export const headlessDigitalEventResponseObjT = iots.type({
 
 export type HeadlessDigitalEventResponseObj = iots.TypeOf<typeof headlessDigitalEventResponseObjT>
 
+export const unsafeIndexArray = <A = never>(): OpI.At<A[], number, A> =>
+  new OpI.At(i => new Lens(list => list[i], value => list => unsafeUpdateAt(i, value, list)));
+
 export module Modelenz {
   export const contentL = Lens.fromProp<HeadlessDigitalEvent>()('content')
   export const bannerL = Lens.fromProp<HeadlessDigitalEventContent>()('banner')
   export const carouselL = Lens.fromProp<HeadlessDigitalEventContent>()('carousel')
   export const sectionsL = Lens.fromProp<HeadlessDigitalEventContent>()('sections') as unknown as Lens<HeadlessDigitalEventContent, readonly Section[]>
-  const sectionsTraversal: Traversal<readonly Section[], Section> = fromTraversable(AR.readonlyArray)<Section>()
+  export const sectionsTraversal: Traversal<readonly Section[], Section> = fromTraversable(AR.readonlyArray)<Section>()
 
   export module SectionPrisms {
     export const knownSectionP = new Prism<Section, KnownSection>(s => isKnownSection(s) ? O.some(s) : O.none, ks => ks)
     export const knownToFeaturedP = new Prism<KnownSection, FeaturedDealsSection>(s => isFeaturedDealsSection(s.section) ? O.some(s.section) : O.none, fs => ({ tag: 'KNOWN', section: fs }))
+    export const knownToAdditionalStoresP = new Prism<KnownSection, AdditionalStoresSection>(s => isAdditionalStoresSection(s.section) ? O.some(s.section) : O.none, fs => ({ tag: 'KNOWN', section: fs }))
   }
 
   // const fidxo: OpI.Optional<readonly Section[], Section> = indexReadonlyArray<Section>().index(0)

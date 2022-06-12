@@ -87,7 +87,7 @@ export const AJStoreDnD: React.FC<AJStoreDnDProps> = ({ stores, onRemove }) => {
         items={items}
         strategy={horizontalListSortingStrategy}
       >
-        <div style={{ display: 'flex', width: '100%', flexWrap: 'wrap' }}>
+        <div style={{ display: 'flex', width: '100%', overflowX: 'auto' }}>
           {items.map(id => <SortableItem key={id} id={id} stores={stores} onRemove={onRemove} />)}
         </div>
       </SortableContext>

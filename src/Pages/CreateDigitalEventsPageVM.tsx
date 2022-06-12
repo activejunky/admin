@@ -4,14 +4,19 @@ import createSelectPlugin from '@rematch/select'
 import { pipe } from 'fp-ts/lib/function'
 import { fromSet } from 'fp-ts/lib/ReadonlySet'
 import * as O from 'fp-ts/Option'
+import * as A from 'fp-ts/Array'
+import * as OpI from 'monocle-ts/lib/index'
 import * as ROA from 'fp-ts/ReadonlyArray'
 import { iteratorSymbol } from 'immer/dist/internal'
 import { Lens } from 'monocle-ts'
+import { indexArray, indexReadonlyArray } from 'monocle-ts/lib/Ix'
 import * as Op from 'monocle-ts/lib/Optional'
 import createCachedSelector from 're-reselect'
 import { Backend } from '../Backend/Api'
 import { HandoffSelect } from '../Components/HandoffModal'
-import { AdditionalStoresSection, AJStore, BannerContent, carouselToBanner, Deal, FeaturedDealsSection, Handoff, HeadlessDigitalEvent, HeadlessDigitalEventContent, HeadlessDigitalEventResponseObj, isAdditionalStoresSection, isKnownSection, Modelenz, Section, SlideFormData } from '../Models/Models'
+import { AdditionalStoresSection, AJStore, BannerContent, carouselToBanner, Deal, FeaturedDealsSection, Handoff, HeadlessDigitalEvent, HeadlessDigitalEventContent, HeadlessDigitalEventResponseObj, isAdditionalStoresSection, isFeaturedDealsSection, isKnownSection, Modelenz, Section, SlideFormData, unsafeIndexArray } from '../Models/Models'
+import { unsafeUpdateAt } from 'fp-ts/lib/Array'
+import src from 'react-select/dist/declarations/src'
 
 export type PageState = {
   de: HeadlessDigitalEvent
@@ -26,6 +31,12 @@ const deContentL = deL.compose(Lens.fromProp<HeadlessDigitalEvent>()('content'))
 const deBannerL = deContentL.compose(Lens.fromProp<HeadlessDigitalEventContent>()('banner'))
 const deCarouselL = deContentL.compose(Lens.fromProp<HeadlessDigitalEventContent>()('carousel'))
 const deSectionsL = deContentL.compose(Lens.fromProp<HeadlessDigitalEventContent>()('sections')) as unknown as Lens<PageState, readonly Section[]>
+const deAdditionalStoresSectionL = (
+  deSectionsL
+    .composeTraversal(Modelenz.sectionsTraversal)
+    .composePrism(Modelenz.SectionPrisms.knownSectionP)
+    .composePrism(Modelenz.SectionPrisms.knownToAdditionalStoresP)
+)
 
 export const emptyFormState: HeadlessDigitalEventContent = {
   pageTitle: '',
@@ -60,6 +71,7 @@ function toHandoff(s: HandoffSelect): O.Option<Handoff> {
   return O.none
 }
 
+
 export const editModel = createModel<RootModel>()({
   state: emptyPageState, // initial state
   reducers: {
@@ -75,6 +87,11 @@ export const editModel = createModel<RootModel>()({
     },
     setShowSuccess(state, payload: boolean) {
       return { ...state, showSuccess: payload }
+    },
+
+    setSlug(state, payload: string) {
+      const slugL = Lens.fromPath<PageState>()(['de', 'title'])
+      return pipe(state, slugL.modify(_ => payload))
     },
     setPageTitle(state, payload: string) {
       const pageTitleL = Lens.fromPath<PageState>()(['de', 'content', 'pageTitle'])
@@ -137,7 +154,7 @@ export const editModel = createModel<RootModel>()({
     },
     addAdditionalStoresSection(state, payload: boolean) {
       if (payload) {
-        return deSectionsL.modify(s => ([...s, { tag: 'KNOWN', section: { tag: 'ADDITIONAL_STORES', title: '', stores: [] } }]))(state)
+        return deSectionsL.modify(s => ([...s, { tag: 'KNOWN', section: { tag: 'ADDITIONAL_STORES', title: '', stores: [], storeRows: [[]] } }]))(state)
       }
       return deSectionsL.modify(ss => pipe(ss, ROA.filter(s => !(isKnownSection(s) && isAdditionalStoresSection(s.section)))))(state)
     },
@@ -149,6 +166,17 @@ export const editModel = createModel<RootModel>()({
         })
       })(state)
     },
+    addAdditionalStoresSectionRow(state, payload: boolean) {
+      const lnz = (
+        deAdditionalStoresSectionL
+          .composeLens(Lens.fromProp<AdditionalStoresSection>()('storeRows'))
+      )
+      if (payload) {
+        return lnz.modify(srs => pipe(srs, A.append([] as AJStore[])))(state)
+      }
+
+      return state
+    },
     addAdditionalStore(state, payload: AJStore) {
       return deSectionsL.modify(ss => {
         return ss.map(s => {
@@ -157,6 +185,15 @@ export const editModel = createModel<RootModel>()({
         })
       })(state)
     },
+    addAdditionalStoreInRow(state, payload: { store: AJStore, rowIndex: number }) {
+      const lnz = (
+        deAdditionalStoresSectionL
+          .composeLens(Lens.fromProp<AdditionalStoresSection>()('storeRows'))
+          .composeLens(unsafeIndexArray<AJStore[]>().at(payload.rowIndex))
+      )
+
+      return lnz.modify(ss => ([...ss, payload.store]))(state)
+    },
     removeAdditionalStore(state, payload: string) {
       return deSectionsL.modify(sections => {
         return sections.map(section => {
@@ -164,6 +201,15 @@ export const editModel = createModel<RootModel>()({
           return lnz.modify(ss => ss.filter(s => s.url_slug != payload))(section)
         })
       })(state)
+    },
+    removeAdditionalStoreFromRow(state, payload: { storeSlug: string, rowIndex: number }) {
+      const lnz = (
+        deAdditionalStoresSectionL
+          .composeLens(Lens.fromProp<AdditionalStoresSection>()('storeRows'))
+          .composeLens(unsafeIndexArray<AJStore[]>().at(payload.rowIndex))
+      )
+
+      return lnz.modify(ss => ss.filter(s => s.url_slug !== payload.storeSlug))(state)
     },
   },
   effects: (dispatch) => ({

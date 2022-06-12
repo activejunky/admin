@@ -9,7 +9,7 @@ import Async from 'react-select/async'
 import { toast, ToastContainer, ToastOptions } from 'react-toastify'
 import 'react-toastify/dist/ReactToastify.css'
 import { Backend, baseUrl, s3BaseUrl } from '../Backend/Api'
-import { AdditionalStoresSection, AJStore, Deal, FeaturedDealsSection, Handoff, HeadlessDigitalEvent, isAdditionalStoresSection, isFeaturedDealsSection, isKnownSection } from '../Models/Models'
+import { AdditionalStoresSection, AJStore, Deal, FeaturedDealsSection, Handoff, HeadlessDigitalEvent, isAdditionalStoresSection, isFeaturedDealsSection, isKnownSection, knownSectionSectionT } from '../Models/Models'
 import { AJStoreDnD } from './CreateDigitalEvents/ItemSorter'
 import { Dispatch, editModel, RootState, store } from './CreateDigitalEventsPageVM'
 import { CopyToClipboard } from 'react-copy-to-clipboard';
@@ -118,6 +118,7 @@ const AllSections: React.FC<{}> = ({ }) => {
         spinner
         text={O.toNullable(isLoading) ?? ''}
       >
+        <EditSlug />
         <EditPageTitle />
         {/* <SectionContainer>
           <EditBanner />
@@ -257,6 +258,28 @@ const ControlPanel: React.FC<{}> = ({ }) => {
         <div>Last saved at: </div>
         <div>{de.last_saved_at ? (new Date(de.last_saved_at).toString()) : ""}</div>
       </div>
+    </div>
+  )
+}
+
+const EditSlug: React.FC<{}> = ({ }) => {
+  const dispatch = useDispatch<Dispatch>()
+  const inputPageTitle = useSelector((state: RootState) => state.editModel.de.title)
+  const [value, setTitle] = React.useState(inputPageTitle);
+
+  React.useEffect(() => {
+    setTitle(inputPageTitle)
+  }, [inputPageTitle])
+
+  const handleSave = (val: string) => {
+    console.log('Edited Value -> ', val);
+    dispatch.editModel.setSlug(val)
+  }
+
+  return (
+    <div className='mt-10' style={{ width: '100%', display: 'flex', marginBottom: 30, alignItems: 'center' }}>
+      <h3 className="text-l font-bold" style={{ marginRight: 18 }}>Slug</h3>
+      <EdiText type="text" value={value} onSave={(val) => { handleSave(val) }} />
     </div>
   )
 }
@@ -442,7 +465,7 @@ const EditAdditionalStores: React.FC<{ section: AdditionalStoresSection }> = ({ 
   const [isShowingModal, setIsShowingModal] = React.useState(false)
   const [mbStores, setMbStores] = React.useState<null | AJStore[]>(null)
   const [selectedStore, setSelectedStore] = React.useState<null | string>()
-  const stores = section.stores
+  const [curRowEdit, setCurRowEdit] = React.useState(0)
   const dispatch = useDispatch<Dispatch>()
 
   React.useEffect(() => {
@@ -468,10 +491,11 @@ const EditAdditionalStores: React.FC<{ section: AdditionalStoresSection }> = ({ 
     if (mbStores) {
       const newStore = mbStores.find(s => s.url_slug == storeSlug)!
       console.log("NEW STORE! ", newStore)
-      dispatch.editModel.addAdditionalStore(newStore)
+      console.log("CUR ROW EDIT! ", curRowEdit)
+      dispatch.editModel.addAdditionalStoreInRow({ store: newStore, rowIndex: curRowEdit })
       setIsShowingModal(false)
     }
-  }, [mbStores])
+  }, [mbStores, curRowEdit])
 
   const handleSave = (va: string) => {
     dispatch.editModel.setAdditionalStoresSectionTitle(va)
@@ -484,21 +508,32 @@ const EditAdditionalStores: React.FC<{ section: AdditionalStoresSection }> = ({ 
         <EdiText type="text" value={section.title} onSave={(val) => { handleSave(val) }} />
       </div>
 
-      <div style={{ display: 'flex', marginBottom: 20 }}>
-        <h3 className="text-1xl font-bold">Stores</h3>
-        <OutlineButton title="Add Store" onClick={openModal} />
-      </div>
 
-      <div style={{ display: 'flex', flexDirection: 'row' }}>
-        <AJStoreDnD
-          stores={stores}
-          onRemove={(slug) => {
-            dispatch.editModel.removeAdditionalStore(slug)
-          }}
-        />
-        {/* {stores.map(s => (
+      {section.storeRows ? (section.storeRows.map((stores, idx) => {
+        return (
+          <div style={{ display: 'flex', flexDirection: 'row', width: '100%', border: '1px solid orange' }}>
+            <AJStoreDnD
+              stores={stores}
+              onRemove={(storeSlug) => {
+                dispatch.editModel.removeAdditionalStoreFromRow({ rowIndex: idx, storeSlug })
+              }}
+            />
+            <OutlineButton title="Add Store to Row" onClick={() => {
+              setCurRowEdit(idx)
+              openModal()
+            }} />
+            {/* {stores.map(s => (
           <StoreIcon ajStore={s} onRemove={() => { dispatch.editModel.removeFeaturedStore(s.url_slug) }} />
         ))} */}
+          </div>
+        )
+      }))
+        :
+        (<></>)
+      }
+
+      <div style={{ width: '100%', display: 'flex', marginTop: '20px' }}>
+        <OutlineButton title="Add Row" onClick={() => { dispatch.editModel.addAdditionalStoresSectionRow(true) }} />
       </div>
 
       <Modal
