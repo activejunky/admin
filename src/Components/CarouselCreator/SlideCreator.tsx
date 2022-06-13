@@ -69,7 +69,7 @@ export const SlideCreator: React.FC<{ mbInitialSlide?: SlideFormData, onDoneSett
               width="80%"
               label={"Deal Id? (optional)"}
               value={slide?.dealId ? slide.dealId.toString() : ""}
-              onInput={e => setSlide(s => ({ ...s, dealId: parseInt(e.target.value) }))}
+              onInput={e => setSlide(s => ({ ...s, dealId: parseInt(e.target.value), deal_id: parseInt(e.target.value) }))}
             />
           </div>
           {mbMatchingDeal

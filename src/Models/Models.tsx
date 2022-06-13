@@ -54,7 +54,8 @@ const slideFormDataT = iots.intersection([
     store: iots.union([ajStoreT, iots.null]),
   }),
   iots.partial({
-    dealId: iots.number
+    dealId: iots.number,
+    deal_id: iots.number
   })
 ])
 
