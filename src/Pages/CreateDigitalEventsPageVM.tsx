@@ -41,7 +41,7 @@ const deAdditionalStoresSectionL = (
 export const emptyFormState: HeadlessDigitalEventContent = {
   pageTitle: '',
   banner: { title: '', cashBackString: '', backgroundImageUrl: null },
-  sections: [{ tag: 'KNOWN', section: { tag: 'FEATURED_DEALS', deals: [] } }],
+  sections: [{ tag: 'KNOWN', section: { tag: 'FEATURED_DEALS', deals: [], dealRows: [[]] } }],
 }
 
 const emptyDE_State: HeadlessDigitalEvent = {
@@ -136,19 +136,27 @@ export const editModel = createModel<RootModel>()({
       const withUpdate = indexL.set(payload.section)(state)
       return withUpdate
     },
-    addFeaturedDeal(state, payload: Deal) {
+    addFeaturedDeal(state, payload: { deal: Deal, rowIndex: number }) {
       return deSectionsL.modify(sections => {
         return sections.map(s => {
-          const lnz = Modelenz.featuredDealsP.composeLens(Lens.fromProp<FeaturedDealsSection>()('deals'))
-          return lnz.modify(dids => ([...dids, payload]))(s)
+          const lnz = (
+            Modelenz.featuredDealsP
+              .composeLens(Lens.fromProp<FeaturedDealsSection>()('dealRows'))
+              .composeLens(unsafeIndexArray<Deal[]>().at(payload.rowIndex))
+          )
+          return lnz.modify(dids => pipe(dids, A.append(payload.deal)))(s)
         })
       })(state)
     },
-    removeFeaturedDeal(state, payload: Deal) {
+    removeFeaturedDeal(state, payload: { dealId: number, rowIndex: number }) {
       return deSectionsL.modify(sections => {
         return sections.map(section => {
-          const lnz = Modelenz.featuredDealsP.composeLens(Lens.fromProp<FeaturedDealsSection>()('deals'))
-          return lnz.modify(ss => ss.filter(s => s.id !== payload.id))(section)
+          const lnz = (
+            Modelenz.featuredDealsP
+              .composeLens(Lens.fromProp<FeaturedDealsSection>()('dealRows'))
+              .composeLens(unsafeIndexArray<Deal[]>().at(payload.rowIndex))
+          )
+          return lnz.modify(ss => ss.filter(s => s.id !== payload.dealId))(section)
         })
       })(state)
     },

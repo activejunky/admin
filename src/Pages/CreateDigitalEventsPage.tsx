@@ -315,6 +315,7 @@ const EditFeaturedDeals: React.FC<{ section: FeaturedDealsSection }> = ({ sectio
   const [inputDeal, setSelectedDeal] = React.useState<null | Deal>()
   const [matchingDeals, setMatchingDeals] = React.useState<null | Deal[]>()
   const dispatch = useDispatch<Dispatch>()
+  const [curEditingRow, setCurEditingRow] = React.useState(0)
   const deals = section.deals
 
 
@@ -329,10 +330,10 @@ const EditFeaturedDeals: React.FC<{ section: FeaturedDealsSection }> = ({ sectio
   const onAdd = React.useCallback(() => {
     console.log("MB DEAL! ", inputDeal)
     if (inputDeal) {
-      dispatch.editModel.addFeaturedDeal(inputDeal)
+      dispatch.editModel.addFeaturedDeal({ deal: inputDeal, rowIndex: curEditingRow })
       setIsShowingModal(false)
     }
-  }, [inputDeal])
+  }, [inputDeal, curEditingRow])
 
   // const onInputDealId = (evt: React.FormEvent<HTMLInputElement>) => {
   //   evt.preventDefault()
@@ -355,11 +356,17 @@ const EditFeaturedDeals: React.FC<{ section: FeaturedDealsSection }> = ({ sectio
       </div>
 
       <div style={{ display: 'flex', flexDirection: 'row', width: '100%', flexWrap: 'wrap' }}>
-        {deals.map(d => {
-          return (
-            <DealTile deal={d} onRemove={() => { dispatch.editModel.removeFeaturedDeal(d) }} />
-          )
-        })}
+        {section.dealRows.map((dr, idx) => (
+          <div className="flex w-full border border-2 border-orange-700 overflow-auto">
+            {dr.map(d => {
+              return (
+                <div style={{ width: '300px', height: '100%', marginRight: '4px' }}>
+                  <DealTile deal={d} onRemove={() => { dispatch.editModel.removeFeaturedDeal({ dealId: d.id, rowIndex: idx }) }} />
+                </div>
+              )
+            })}
+          </div>
+        ))}
         {/* <AJStoreDnD
           stores={stores}
           onRemove={(slug) => {
@@ -511,7 +518,7 @@ const EditAdditionalStores: React.FC<{ section: AdditionalStoresSection }> = ({ 
 
       {section.storeRows ? (section.storeRows.map((stores, idx) => {
         return (
-          <div style={{ display: 'flex', flexDirection: 'row', width: '100%', border: '1px solid orange' }}>
+          <div style={{ display: 'flex', flexDirection: 'row', width: '100%', minHeight: '200px', border: '1px solid orange' }}>
             <AJStoreDnD
               stores={stores}
               onRemove={(storeSlug) => {
