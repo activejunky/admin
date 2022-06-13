@@ -17,6 +17,7 @@ import { HandoffSelect } from '../Components/HandoffModal'
 import { AdditionalStoresSection, AJStore, BannerContent, carouselToBanner, Deal, FeaturedDealsSection, Handoff, HeadlessDigitalEvent, HeadlessDigitalEventContent, HeadlessDigitalEventResponseObj, isAdditionalStoresSection, isFeaturedDealsSection, isKnownSection, Modelenz, Section, SlideFormData, unsafeIndexArray } from '../Models/Models'
 import { unsafeUpdateAt } from 'fp-ts/lib/Array'
 import src from 'react-select/dist/declarations/src'
+import { dropAt } from 'fp-ts-std/Array'
 
 export type PageState = {
   de: HeadlessDigitalEvent
@@ -31,11 +32,22 @@ const deContentL = deL.compose(Lens.fromProp<HeadlessDigitalEvent>()('content'))
 const deBannerL = deContentL.compose(Lens.fromProp<HeadlessDigitalEventContent>()('banner'))
 const deCarouselL = deContentL.compose(Lens.fromProp<HeadlessDigitalEventContent>()('carousel'))
 const deSectionsL = deContentL.compose(Lens.fromProp<HeadlessDigitalEventContent>()('sections')) as unknown as Lens<PageState, readonly Section[]>
+const deSectionsTraversal = deSectionsL.composeTraversal(Modelenz.sectionsTraversal)
 const deAdditionalStoresSectionL = (
-  deSectionsL
-    .composeTraversal(Modelenz.sectionsTraversal)
+  deSectionsTraversal
     .composePrism(Modelenz.SectionPrisms.knownSectionP)
     .composePrism(Modelenz.SectionPrisms.knownToAdditionalStoresP)
+)
+
+const deFeaturedDealsSectionP = (
+  deSectionsTraversal
+    .composePrism(Modelenz.SectionPrisms.knownSectionP)
+    .composePrism(Modelenz.SectionPrisms.knownToFeaturedP)
+)
+
+const deFeaturedDealsSectionDealRowsP = (
+  deFeaturedDealsSectionP
+    .composeLens(Lens.fromProp<FeaturedDealsSection>()('dealRows'))
 )
 
 export const emptyFormState: HeadlessDigitalEventContent = {
@@ -136,17 +148,15 @@ export const editModel = createModel<RootModel>()({
       const withUpdate = indexL.set(payload.section)(state)
       return withUpdate
     },
+    addFeaturedDealRow(state, payload: boolean) {
+      return deFeaturedDealsSectionDealRowsP.modify(drs => pipe(drs, A.append([] as Deal[])))(state)
+    },
+    removeFeaturedDealRow(state, payload: number) {
+      return deFeaturedDealsSectionDealRowsP.modify(drs => pipe(drs, dropAt(payload)(1), O.getOrElse(() => drs)))(state)
+    },
     addFeaturedDeal(state, payload: { deal: Deal, rowIndex: number }) {
-      return deSectionsL.modify(sections => {
-        return sections.map(s => {
-          const lnz = (
-            Modelenz.featuredDealsP
-              .composeLens(Lens.fromProp<FeaturedDealsSection>()('dealRows'))
-              .composeLens(unsafeIndexArray<Deal[]>().at(payload.rowIndex))
-          )
-          return lnz.modify(dids => pipe(dids, A.append(payload.deal)))(s)
-        })
-      })(state)
+      const lnz = deFeaturedDealsSectionDealRowsP.composeLens(unsafeIndexArray<Deal[]>().at(payload.rowIndex))
+      return lnz.modify(dids => pipe(dids, A.append(payload.deal)))(state)
     },
     removeFeaturedDeal(state, payload: { dealId: number, rowIndex: number }) {
       return deSectionsL.modify(sections => {

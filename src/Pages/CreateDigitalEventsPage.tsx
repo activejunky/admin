@@ -248,10 +248,10 @@ const ControlPanel: React.FC<{}> = ({ }) => {
       <div style={{ width: '100%', position: 'absolute', left: 0, top: 10, bottom: 10, display: 'flex', justifyContent: 'center', zIndex: 2 }}>
         <button className="bg-blue-500 text-white py-2 px-4 mr-10" onClick={() => { onSaveDraft() }}>
 
-          Save Draft
+          Save
         </button>
         {/* <button style={{ marginRight: 30 }}>Preview</button> */}
-        <button className="bg-orange-500 text-white py-2 px-4" onClick={() => { onPublishDraft() }}>Publish</button>
+        {/* <button className="bg-orange-500 text-white py-2 px-4" onClick={() => { onPublishDraft() }}>Publish</button> */}
       </div>
 
       <div style={{ width: '200px', position: 'absolute', right: 0, top: 0, bottom: 0, display: 'flex', alignItems: 'flex-end', flexDirection: 'column' }}>
@@ -350,23 +350,35 @@ const EditFeaturedDeals: React.FC<{ section: FeaturedDealsSection }> = ({ sectio
       <div style={{ display: 'flex', marginBottom: 20 }}>
         <h3 className="text-2xl font-bold">Featured Deals</h3>
         {/* <OutlineButton title="Add Featured Deal" onClick={openModal} /> */}
-        <button className="btn btn-primary ml-4" onClick={openModal} >
-          Add Featured Deal
-        </button>
       </div>
 
-      <div style={{ display: 'flex', flexDirection: 'row', width: '100%', flexWrap: 'wrap' }}>
+      <div className="flex flex-col w-full">
         {section.dealRows.map((dr, idx) => (
-          <div className="flex w-full border border-2 border-orange-700 overflow-auto">
-            {dr.map(d => {
-              return (
-                <div style={{ width: '300px', height: '100%', marginRight: '4px' }}>
-                  <DealTile deal={d} onRemove={() => { dispatch.editModel.removeFeaturedDeal({ dealId: d.id, rowIndex: idx }) }} />
-                </div>
-              )
-            })}
+          <div className="flex flex-col w-full border border-2 border-orange-700 mt-8 h-64">
+            <div className='flex flex-row-reverse w-full'>
+              <button onClick={() => { dispatch.editModel.removeFeaturedDealRow(idx) }} className="border rounded-2xl">Remove row</button>
+            </div>
+            <div className="flex overflow-auto">
+              {dr.map(d => {
+                return (
+                  <div style={{ width: '300px', height: '100%', marginRight: '4px' }}>
+                    <DealTile deal={d} onRemove={() => { dispatch.editModel.removeFeaturedDeal({ dealId: d.id, rowIndex: idx }) }} />
+                  </div>
+                )
+              })}
+              <div className="h-full flex flex-col justify-center" >
+                <OutlineButton title='Add Featured Deal to Row' onClick={() => {
+                  setCurEditingRow(idx)
+                  openModal()
+                }} />
+              </div>
+            </div>
           </div>
         ))}
+
+        <div className="flex w-full mt-8">
+          <button className="btn btn-info" onClick={() => { dispatch.editModel.addFeaturedDealRow(true) }}>Add featured deal row</button>
+        </div>
         {/* <AJStoreDnD
           stores={stores}
           onRemove={(slug) => {
