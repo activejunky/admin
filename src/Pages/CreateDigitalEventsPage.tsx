@@ -58,7 +58,6 @@ function useBearerTkn() {
 
 export const DigitalEventsPage: React.FC<{}> = ({ }) => {
   const { id } = useParams()
-  const [isCopiedToClip, setCopyToClip] = React.useState<{ value: string, copied: boolean }>({ value: id ? deepLink(id) : '', copied: false })
 
   return (
     <div style={{ width: '90vw', height: '100vh', padding: 20 }}>
@@ -68,20 +67,30 @@ export const DigitalEventsPage: React.FC<{}> = ({ }) => {
         <CurIdContext.Provider value={id}>
           {/* <div><Preview /></div> */}
           <ControlPanel />
-          <div style={{ display: 'flex' }}>
-            <input type="text" value={`${isCopiedToClip.value}`} className="border" />
-            <CopyToClipboard text={isCopiedToClip.value}
-              onCopy={() => {
-                setCopyToClip(v => ({ ...v, copied: true }))
-                toast.success("Copied to clipboard!", { hideProgressBar: true })
-              }}>
-              <button className='border border-stone-600 rounded-md'>Copy Dynamic link to clipboard</button>
-            </CopyToClipboard>
-          </div>
+          <CopyDeepLinkToClipboardView />
           <AllSections />
         </CurIdContext.Provider>
       </Provider>
 
+    </div>
+  )
+}
+
+const CopyDeepLinkToClipboardView: React.FC<{}> = ({ }) => {
+  const title = useSelector((s: RootState) => s.editModel.de.title)
+  const [isCopiedToClip, setCopyToClip] = React.useState<{ value: string, copied: boolean }>({ value: title ? deepLink(title) : '', copied: false })
+  return (
+    <div>
+      <div style={{ display: 'flex' }}>
+        <input type="text" value={`${isCopiedToClip.value}`} className="border" />
+        <CopyToClipboard text={isCopiedToClip.value}
+          onCopy={() => {
+            setCopyToClip(v => ({ ...v, copied: true }))
+            toast.success("Copied to clipboard!", { hideProgressBar: true })
+          }}>
+          <button className='border border-stone-600 rounded-md'>Copy Dynamic link to clipboard</button>
+        </CopyToClipboard>
+      </div>
     </div>
   )
 }
