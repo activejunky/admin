@@ -39,6 +39,13 @@ const customStyles = {
 
 
 
+const CurSlugContext = React.createContext<undefined | string>(undefined)
+function useCurSlug() {
+  const cid = React.useContext(CurSlugContext)
+  return cid!
+}
+
+
 const CurIdContext = React.createContext<undefined | string>(undefined)
 function useCurId() {
   const cid = React.useContext(CurIdContext)
@@ -57,19 +64,25 @@ function useBearerTkn() {
 }
 
 export const DigitalEventsPage: React.FC<{}> = ({ }) => {
-  const { id } = useParams()
+  const { id: slug } = useParams()
+  const query = useQuery()
+  const id = query.get("id")!
 
   return (
     <div style={{ width: '90vw', height: '100vh', padding: 20 }}>
       <h1>Create Digital Event</h1>
 
       <Provider store={store}>
-        <CurIdContext.Provider value={id}>
-          {/* <div><Preview /></div> */}
-          <ControlPanel />
-          <CopyDeepLinkToClipboardView />
-          <AllSections />
-        </CurIdContext.Provider>
+        <CurSlugContext.Provider value={slug}>
+          <CurIdContext.Provider value={id}>
+
+            {/* <div><Preview /></div> */}
+            <ControlPanel />
+            <CopyDeepLinkToClipboardView />
+            <AllSections />
+          </CurIdContext.Provider>
+        </CurSlugContext.Provider>
+
       </Provider>
 
     </div>
@@ -97,15 +110,11 @@ const CopyDeepLinkToClipboardView: React.FC<{}> = ({ }) => {
 
 const AllSections: React.FC<{}> = ({ }) => {
   const dispatch = useDispatch<Dispatch>()
-  const id = useCurId()
+  const slug = useCurSlug()
   const isLoading = useSelector((s: RootState) => s.editModel.isFetching)
 
   React.useEffect(() => {
-    dispatch.editModel.syncDigitalEvent(id)
-
-    Backend.getDeal({ dealId: 96371 }).then(r => {
-      console.log(`RESULT OF GETTING DEAL ${JSON.stringify(r)}`)
-    })
+    dispatch.editModel.syncDigitalEvent(slug)
   }, [])
 
   return (
@@ -156,9 +165,12 @@ const CarouselEditorSection: React.FC<{}> = ({ }) => {
             dispatch.editModel.setCarousel(slides)
           }}
           onRemove={slide => {
-            const match = carousel?.findIndex(ss => ss.headline_copy === slide.headline_copy)
-            if (carousel && match && match !== -1) {
-              dispatch.editModel.setCarousel(unsafeDeleteAt(match, carousel))
+            const match = carousel?.findIndex(ss => ss.background_image_url === slide.background_image_url)
+            console.log("SLIDE TO REMOVE! ", match, slide.background_image_url, carousel?.map(ss => ss.background_image_url))
+            if (carousel && match !== undefined && match !== -1) {
+              const newCarousel = unsafeDeleteAt(match, carousel)
+              console.log("NEW CAROUSEL! ", newCarousel.length)
+              dispatch.editModel.setCarousel(newCarousel)
             }
           }}
         />
@@ -228,6 +240,7 @@ const CmsSections: React.FC<{}> = ({ }) => {
 
 const ControlPanel: React.FC<{}> = ({ }) => {
   const id = useCurId()
+  const slug = useCurSlug()
   const de = useSelector((r: RootState) => r.editModel.de)
   const tkn = useBearerTkn()
   const dispatch = useDispatch<Dispatch>()
@@ -239,7 +252,7 @@ const ControlPanel: React.FC<{}> = ({ }) => {
     dispatch.editModel.setIsFetching(O.some('Saving...'))
     Backend.saveDraft(tkn, id, curForm).then(_ => {
       dispatch.editModel.setIsFetching(O.none)
-      dispatch.editModel.syncDigitalEvent(id)
+      dispatch.editModel.syncDigitalEvent(slug)
       toast.success("Saved!", { hideProgressBar: true })
     })
   }, [tkn, id, curForm])

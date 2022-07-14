@@ -4,6 +4,7 @@ import './App.css';
 import { Routes, Route, Link } from "react-router-dom";
 import { DigitalEventsPage } from './Pages/CreateDigitalEventsPage';
 import { AllDigitalEventsPage } from './Pages/AllDigitalEventsPage';
+import { Backend, baseUrl } from './Backend/Api';
 
 function App() {
   return (
@@ -23,7 +24,7 @@ const Login: React.FC<{}> = ({ }) => {
   const [inputPwd, setInputPwd] = React.useState<string>('')
 
   return (
-    <div className="w-full h-full flex justify-center items-center border h-screen flex-col">
+    <div className="w-full flex justify-center items-center border h-screen flex-col">
       <form
         className='flex flex-col w-1/2 h-64 border justify-between'
         onSubmit={(e) => {
