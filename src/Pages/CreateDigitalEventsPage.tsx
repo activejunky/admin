@@ -22,6 +22,10 @@ import { DealTile } from '../Components/DealView'
 import { CarouselEditor, SlideCreator } from '../Components/CarouselCreator/SlideCreator'
 import { Root } from 'react-dom/client'
 import { unsafeDeleteAt } from 'fp-ts/lib/Array'
+import { DragDropContext, Droppable, Draggable } from 'react-beautiful-dnd';
+import { DragEndEvent } from '@dnd-kit/core'
+import { EditFeaturedDealsRow } from '../Components/EditFeaturedDealsRow'
+
 
 const customStyles = {
   content: {
@@ -376,18 +380,23 @@ const EditFeaturedDeals: React.FC<{ section: FeaturedDealsSection }> = ({ sectio
 
       <div className="flex flex-col w-full">
         {section.dealRows.map((dr, idx) => (
-          <div className="flex flex-col w-full border border-2 border-orange-700 mt-8 h-64">
+          <div className="flex flex-col w-full border border-2 border-orange-700 mt-8 h-82">
             <div className='flex flex-row-reverse w-full'>
               <button onClick={() => { dispatch.editModel.removeFeaturedDealRow(idx) }} className="border rounded-2xl">Remove row</button>
             </div>
+
             <div className="flex overflow-auto">
-              {dr.map(d => {
+              <EditFeaturedDealsRow
+                items={dr}
+                onRemove={(d, idx) => { dispatch.editModel.removeFeaturedDeal({ dealId: d.id, rowIndex: idx }) }}
+              />
+              {/* {dr.map(d => {
                 return (
                   <div style={{ width: '300px', height: '100%', marginRight: '4px' }}>
                     <DealTile deal={d} onRemove={() => { dispatch.editModel.removeFeaturedDeal({ dealId: d.id, rowIndex: idx }) }} />
                   </div>
                 )
-              })}
+              })} */}
               <div className="h-full flex flex-col justify-center" >
                 <OutlineButton title='Add Featured Deal to Row' onClick={() => {
                   setCurEditingRow(idx)
@@ -395,12 +404,14 @@ const EditFeaturedDeals: React.FC<{ section: FeaturedDealsSection }> = ({ sectio
                 }} />
               </div>
             </div>
+            {/* <FeaturedDealRow items={dr} /> */}
           </div>
         ))}
 
         <div className="flex w-full mt-8">
           <button className="btn btn-info" onClick={() => { dispatch.editModel.addFeaturedDealRow(true) }}>Add featured deal row</button>
         </div>
+
         {/* <AJStoreDnD
           stores={stores}
           onRemove={(slug) => {
@@ -476,6 +487,9 @@ const EditFeaturedDeals: React.FC<{ section: FeaturedDealsSection }> = ({ sectio
     </div>
   )
 }
+
+
+
 
 
 
