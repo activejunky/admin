@@ -385,9 +385,12 @@ const EditFeaturedDeals: React.FC<{ section: FeaturedDealsSection }> = ({ sectio
               <button onClick={() => { dispatch.editModel.removeFeaturedDealRow(idx) }} className="border rounded-2xl">Remove row</button>
             </div>
 
-            <div className="flex overflow-auto">
+            <div className="flex" >
               <EditFeaturedDealsRow
                 items={dr}
+                onReorder={(newList) => {
+                  dispatch.editModel.reorderFeaturedDealRow({ newList, rowIndex: idx })
+                }}
                 onRemove={(d, idx) => { dispatch.editModel.removeFeaturedDeal({ dealId: d.id, rowIndex: idx }) }}
               />
               {/* {dr.map(d => {

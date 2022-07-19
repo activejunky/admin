@@ -32,12 +32,17 @@ const reorder = (list: Deal[], startIndex: number, endIndex: number): Deal[] => 
   return result;
 };
 
-export class EditFeaturedDealsRow extends React.Component<{ items: Deal[], onRemove: (deal: Deal, rowIdx: number) => void }, { items: Deal[] }> {
-  constructor(props: { items: Deal[], onRemove: (deal: Deal, rowIdx: number) => void }) {
+
+interface Props {
+  items: Deal[]
+  onRemove: (deal: Deal, rowIdx: number) => void
+  onReorder: (newDealList: Deal[]) => void
+}
+
+export class EditFeaturedDealsRow extends React.Component<Props, {}> {
+  constructor(props: Props) {
     super(props);
-    this.state = {
-      items: props.items,
-    };
+
     this.onDragEnd = this.onDragEnd.bind(this);
   }
 
@@ -48,14 +53,12 @@ export class EditFeaturedDealsRow extends React.Component<{ items: Deal[], onRem
     }
 
     const items = reorder(
-      this.state.items,
+      this.props.items,
       result.source.index,
       result.destination.index
     );
 
-    this.setState({
-      items,
-    });
+    this.props.onReorder(items)
   }
 
   render() {
@@ -69,7 +72,7 @@ export class EditFeaturedDealsRow extends React.Component<{ items: Deal[], onRem
                 style={getListStyle(snapshot.isDraggingOver)}
                 {...provided.droppableProps}
               >
-                {this.state.items.map((item, index) => (
+                {this.props.items.map((item, index) => (
                   <Draggable key={item.id} draggableId={item.id.toString()} index={index}>
                     {(provided: any, snapshot: any) => (
                       <div

@@ -18,6 +18,7 @@ import { AdditionalStoresSection, AJStore, BannerContent, carouselToBanner, Deal
 import { unsafeUpdateAt } from 'fp-ts/lib/Array'
 import src from 'react-select/dist/declarations/src'
 import { dropAt } from 'fp-ts-std/Array'
+import { NewLineKind } from 'typescript'
 
 export type PageState = {
   de: HeadlessDigitalEvent
@@ -153,6 +154,13 @@ export const editModel = createModel<RootModel>()({
     },
     removeFeaturedDealRow(state, payload: number) {
       return deFeaturedDealsSectionDealRowsP.modify(drs => pipe(drs, dropAt(payload)(1), O.getOrElse(() => drs)))(state)
+    },
+    reorderFeaturedDealRow(state, payload: { newList: Deal[], rowIndex: number }) {
+      const lnz = deFeaturedDealsSectionDealRowsP.composeLens(unsafeIndexArray<Deal[]>().at(payload.rowIndex))
+      console.log("NEW LIST! ", payload.rowIndex, payload.newList.map(d => `${d.id} ${d.store.name}`))
+      const newState = lnz.modify(_ => payload.newList)(state)
+      console.log("new state! ", newState.de.content.sections[0])
+      return newState
     },
     addFeaturedDeal(state, payload: { deal: Deal, rowIndex: number }) {
       const lnz = deFeaturedDealsSectionDealRowsP.composeLens(unsafeIndexArray<Deal[]>().at(payload.rowIndex))
