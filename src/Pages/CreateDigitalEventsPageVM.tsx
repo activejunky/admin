@@ -220,6 +220,15 @@ export const editModel = createModel<RootModel>()({
 
       return lnz.modify(ss => ([...ss, payload.store]))(state)
     },
+    reorderAdditionalStoreRow(state, payload: { rowIndex: number, newList: AJStore[] }) {
+      const lnz = (
+        deAdditionalStoresSectionL
+          .composeLens(Lens.fromProp<AdditionalStoresSection>()('storeRows'))
+          .composeLens(unsafeIndexArray<AJStore[]>().at(payload.rowIndex))
+      )
+
+      return lnz.set(payload.newList)(state)
+    },
     removeAdditionalStore(state, payload: string) {
       return deSectionsL.modify(sections => {
         return sections.map(section => {

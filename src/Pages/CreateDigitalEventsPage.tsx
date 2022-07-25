@@ -25,6 +25,7 @@ import { unsafeDeleteAt } from 'fp-ts/lib/Array'
 import { DragDropContext, Droppable, Draggable } from 'react-beautiful-dnd';
 import { DragEndEvent } from '@dnd-kit/core'
 import { EditFeaturedDealsRow } from '../Components/EditFeaturedDealsRow'
+import { EditAdditionalStoresRow } from '../Components/EditFeaturedStoresRow'
 
 
 const customStyles = {
@@ -570,12 +571,21 @@ const EditAdditionalStores: React.FC<{ section: AdditionalStoresSection }> = ({ 
       {section.storeRows ? (section.storeRows.map((stores, idx) => {
         return (
           <div style={{ display: 'flex', flexDirection: 'row', width: '100%', minHeight: '200px', border: '1px solid orange' }}>
-            <AJStoreDnD
+            <EditAdditionalStoresRow
+              items={stores}
+              onRemove={(store, idx) => {
+                dispatch.editModel.removeAdditionalStoreFromRow({ storeSlug: store.url_slug, rowIndex: idx })
+              }}
+              onReorder={(newList) => {
+                dispatch.editModel.reorderAdditionalStoreRow({ rowIndex: idx, newList })
+              }}
+            />
+            {/* <AJStoreDnD
               stores={stores}
               onRemove={(storeSlug) => {
                 dispatch.editModel.removeAdditionalStoreFromRow({ rowIndex: idx, storeSlug })
               }}
-            />
+            /> */}
             <OutlineButton title="Add Store to Row" onClick={() => {
               setCurRowEdit(idx)
               openModal()
